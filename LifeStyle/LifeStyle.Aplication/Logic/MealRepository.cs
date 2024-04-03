@@ -1,9 +1,10 @@
-﻿using LifeStyle.Enums;
-using LifeStyle.Interfaces;
-using LifeStyle.Models.Meal;
-using LifeStyle.Models.User;
+﻿using LifeStyle.LifeStyle.Aplication.Interfaces;
+using LifeStyle.LifeStyle.Domain.Enums;
+using LifeStyle.LifeStyle.Domain.Models.Meal;
 
-namespace LifeStyle.Logic
+
+
+namespace LifeStyle.LifeStyle.Aplication.Logic
 {
     public class MealRepository : IRepository<Meal>
     {
@@ -13,8 +14,8 @@ namespace LifeStyle.Logic
         public MealRepository()
         {
 
-            _meals.Add(new Meal(1, "Oatmeal", MealType.Breakfast, new Nutrients(144.0,5.0, 30.0, 2.5)));
-            _meals.Add(new Meal(2, "Chicken Salad", MealType.Lunch, new Nutrients(255.1,25.0, 10.0, 15.0)));
+            _meals.Add(new Meal(1, "Oatmeal", MealType.Breakfast, new Nutrients(144.0, 5.0, 30.0, 2.5)));
+            _meals.Add(new Meal(2, "Chicken Salad", MealType.Lunch, new Nutrients(255.1, 25.0, 10.0, 15.0)));
 
         }
 
@@ -49,7 +50,7 @@ namespace LifeStyle.Logic
             var existingMeal = await GetById(entity.Id);
             if (existingMeal != null)
             {
-                
+
                 existingMeal.Name = entity.Name;
                 existingMeal.MealType = entity.MealType;
                 existingMeal.Nutrients = entity.Nutrients;

@@ -1,9 +1,9 @@
-using LifeStyle.Interfaces;
-using LifeStyle.Logic;
-using LifeStyle.Models.Exercises;
-using LifeStyle.Models.Meal;
+using LifeStyle.LifeStyle.Aplication.Interfaces;
+using LifeStyle.LifeStyle.Aplication.Logic;
+using LifeStyle.LifeStyle.Domain.Models.Exercises;
+using LifeStyle.LifeStyle.Domain.Models.Meal;
+using LifeStyle.LifeStyle.Domain.Models.Users;
 using LifeStyle.Models.Planner;
-using LifeStyle.Models.User;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 

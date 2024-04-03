@@ -1,10 +1,7 @@
-﻿using LifeStyle.Interfaces;
-using LifeStyle.Logic;
-using LifeStyle.Models.User;
-using Microsoft.AspNetCore.Identity;
+﻿using LifeStyle.LifeStyle.Aplication.Interfaces;
+using LifeStyle.LifeStyle.Domain.Models.Users;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ActionConstraints;
-using Microsoft.EntityFrameworkCore;
+
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 

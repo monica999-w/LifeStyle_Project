@@ -1,8 +1,6 @@
 ﻿
-using LifeStyle.Models.Planner;
-using LifeStyle.Models.User;
 
-namespace LifeStyle.Interfaces
+namespace LifeStyle.LifeStyle.Aplication.Interfaces
 {
     public interface IRepository<T>
     {
@@ -11,7 +9,7 @@ namespace LifeStyle.Interfaces
         Task Update(T entity);
         Task<IEnumerable<T>> GetAll();
         Task<T?> GetById(int id);
-      
+
     }
 
 }

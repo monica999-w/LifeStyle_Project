@@ -1,6 +1,5 @@
-﻿using LifeStyle.Interfaces;
-using LifeStyle.Models.Meal;
-using LifeStyle.Models.User;
+﻿using LifeStyle.LifeStyle.Aplication.Interfaces;
+using LifeStyle.LifeStyle.Domain.Models.Meal;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LifeStyle.Controllers
@@ -17,13 +16,13 @@ namespace LifeStyle.Controllers
         }
 
         [HttpGet]
-        public async Task<IEnumerable<Meal>> GetAllUsers()
+        public async Task<IEnumerable<Meal>> GetAllMeal()
         {
             return await _meal.GetAll();
         }
 
         [HttpPost]
-        public async Task<IActionResult> AddUser(Meal meal)
+        public async Task<IActionResult> AddMeal(Meal meal)
         {
             await _meal.Add(meal);
             return Ok();
@@ -49,7 +48,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPut("meal/{id}")]
-        public async Task<IActionResult> UpdateUserProfile(int id, Meal updatedMeal)
+        public async Task<IActionResult> UpdateMeal(int id, Meal updatedMeal)
         {
             if (id != updatedMeal.Id)
             {

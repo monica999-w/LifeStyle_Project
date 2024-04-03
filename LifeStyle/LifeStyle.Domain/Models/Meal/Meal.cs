@@ -1,6 +1,6 @@
-﻿using LifeStyle.Enums;
+﻿using LifeStyle.LifeStyle.Domain.Enums;
 
-namespace LifeStyle.Models.Meal
+namespace LifeStyle.LifeStyle.Domain.Models.Meal
 {
     public class Meal
     {
@@ -9,7 +9,7 @@ namespace LifeStyle.Models.Meal
         public MealType MealType { get; set; }
         public Nutrients Nutrients { get; set; }
 
-        public Meal(int id,string name, MealType mealType, Nutrients nutrients)
+        public Meal(int id, string name, MealType mealType, Nutrients nutrients)
         {
             Id = id;
             Name = name;

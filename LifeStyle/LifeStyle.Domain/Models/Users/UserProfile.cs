@@ -1,4 +1,4 @@
-﻿namespace LifeStyle.Models.User
+﻿namespace LifeStyle.LifeStyle.Domain.Models.Users
 {
     public class UserProfile
     {
@@ -8,7 +8,7 @@
         public double Height { get; set; }
         public double Weight { get; set; }
 
-        public UserProfile(int id,string email, string phoneNumber, double height, double weight)
+        public UserProfile(int id, string email, string phoneNumber, double height, double weight)
         {
             Id = id;
             Email = email;

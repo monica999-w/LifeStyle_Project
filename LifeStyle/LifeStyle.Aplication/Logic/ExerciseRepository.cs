@@ -1,10 +1,9 @@
-﻿using LifeStyle.Enums;
-using LifeStyle.Interfaces;
-using LifeStyle.Models.Exercises;
-using LifeStyle.Models.Meal;
-using LifeStyle.Models.User;
+﻿using LifeStyle.LifeStyle.Aplication.Interfaces;
+using LifeStyle.LifeStyle.Domain.Enums;
+using LifeStyle.LifeStyle.Domain.Models.Exercises;
 
-namespace LifeStyle.Logic
+
+namespace LifeStyle.LifeStyle.Aplication.Logic
 {
 
     public class ExerciseRepository : IRepository<Exercise>
@@ -14,7 +13,7 @@ namespace LifeStyle.Logic
 
         public ExerciseRepository()
         {
-            
+
             _exercises.Add(new Exercise(1, "Running", 30, ExerciseType.Cardio));
             _exercises.Add(new Exercise(2, "Weightlifting", 45, ExerciseType.Yoga));
             _exercises.Add(new Exercise(3, "Yoga", 60, ExerciseType.Cardio));
@@ -52,7 +51,7 @@ namespace LifeStyle.Logic
             var existingExercise = await GetById(entity.Id);
             if (existingExercise != null)
             {
-               
+
                 existingExercise.Name = entity.Name;
                 existingExercise.DurationInMinutes = entity.DurationInMinutes;
                 existingExercise.Type = entity.Type;

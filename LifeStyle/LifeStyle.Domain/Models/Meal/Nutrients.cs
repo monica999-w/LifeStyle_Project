@@ -1,4 +1,4 @@
-﻿namespace LifeStyle.Models.Meal
+﻿namespace LifeStyle.LifeStyle.Domain.Models.Meal
 {
     public class Nutrients
     {
@@ -7,7 +7,7 @@
         public double Carbohydrates { get; set; }
         public double Fat { get; set; }
 
-        public Nutrients(double calories, double protein, double carbohydrates,double fat)
+        public Nutrients(double calories, double protein, double carbohydrates, double fat)
         {
             Calories = calories;
             Protein = protein;
@@ -17,4 +17,4 @@
 
     }
 }
-   
+

@@ -1,7 +1,7 @@
-﻿using LifeStyle.Models.Planner;
-using LifeStyle.Models.User;
+﻿using LifeStyle.LifeStyle.Domain.Models.Users;
+using LifeStyle.Models.Planner;
 
-namespace LifeStyle.Interfaces
+namespace LifeStyle.LifeStyle.Aplication.Interfaces
 {
     public interface IPlannerRepository
     {

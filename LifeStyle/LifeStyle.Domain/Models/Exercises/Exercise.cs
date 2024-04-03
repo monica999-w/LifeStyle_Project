@@ -1,8 +1,7 @@
-﻿using LifeStyle.Enums;
-using LifeStyle.Interfaces;
-using LifeStyle.Models.User;
+﻿using LifeStyle.LifeStyle.Domain.Enums;
 
-namespace LifeStyle.Models.Exercises
+
+namespace LifeStyle.LifeStyle.Domain.Models.Exercises
 {
     public class Exercise
     {
@@ -11,13 +10,13 @@ namespace LifeStyle.Models.Exercises
         public int DurationInMinutes { get; set; }
         public ExerciseType Type { get; set; }
 
-        public Exercise(int id ,string name, int durationInMinutes, ExerciseType type)
+        public Exercise(int id, string name, int durationInMinutes, ExerciseType type)
         {
             Id = id;
             Name = name;
             DurationInMinutes = durationInMinutes;
             Type = type;
-           
+
         }
     }
 }

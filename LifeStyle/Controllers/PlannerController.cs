@@ -1,6 +1,6 @@
-﻿using LifeStyle.Interfaces;
+﻿using LifeStyle.LifeStyle.Aplication.Interfaces;
+using LifeStyle.LifeStyle.Domain.Models.Users;
 using LifeStyle.Models.Planner;
-using LifeStyle.Models.User;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LifeStyle.Controllers
