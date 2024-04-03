@@ -29,15 +29,16 @@ namespace LifeStyle.nUnitTests
         public async Task Add_AddsNewMeal()
         {
             // Arrange
-            var mealRepositoryMock = new Mock<IRepository<Meal>>();
-            var mealRepository = mealRepositoryMock.Object;
-            var meal = new Meal(7, "test1",MealType.Breakfast, new Nutrients(124,32,24,24));
+            var mealRepository = new InMemoryRepository<Meal>();
+            var newMeal = new Meal(1, "test1", MealType.Breakfast, new Nutrients(124, 32, 24, 24));
 
             // Act
-            await mealRepository.Add(meal);
+            await mealRepository.Add(newMeal);
 
             // Assert
-            mealRepositoryMock.Verify(repo => repo.Add(meal), Times.Once);
+            var result = await mealRepository.GetAll();
+            Assert.Single(result);
+            Assert.Contains(newMeal, result);
         }
 
         [Fact]

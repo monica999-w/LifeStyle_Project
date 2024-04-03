@@ -34,15 +34,16 @@ namespace LifeStyle.nUnitTests
         public async Task Add_Adds_New_UserProfile()
         {
             // Arrange
-            var userRepositoryMock = new Mock<IRepository<UserProfile>>();
-            var userRepository = userRepositoryMock.Object;
-            var newUserProfile = new UserProfile(4, "new@example.com", "password", 160, 60);
+            var userRepository = new InMemoryRepository<UserProfile>();
+            var newUserProfile = new UserProfile(1, "new@example.com", "94863858", 160, 60);
 
             // Act
             await userRepository.Add(newUserProfile);
 
             // Assert
-            userRepositoryMock.Verify(repo => repo.Add(newUserProfile), Times.Once);
+            var result = await userRepository.GetAll();
+            Assert.Single(result);
+            Assert.Contains(newUserProfile, result);
         }
 
         [Fact]
@@ -87,22 +88,17 @@ namespace LifeStyle.nUnitTests
 
         [Fact]
         public async Task GetById_Returns_UserProfile_IfExists()
-        {
-            // Arrange
-            var userProfiles = new List<UserProfile>
-        {
-            new UserProfile(1, "john@example.com", "123456789", 175, 70)
-        };
-            var userRepositoryMock = new Mock<IRepository<UserProfile>>();
-            userRepositoryMock.Setup(repo => repo.GetById(1)).ReturnsAsync(userProfiles.First());
-            var userRepository = userRepositoryMock.Object;
+        { // Arrange
+            var userRepository = new InMemoryRepository<UserProfile>();
+            var userProfile = new UserProfile(1, "john@example.com", "123456789", 180, 75);
+            await userRepository.Add(userProfile);
 
             // Act
             var result = await userRepository.GetById(1);
 
             // Assert
             Assert.NotNull(result);
-            Assert.Equal(userProfiles.First(), result);
+            Assert.Equal(userProfile, result);
         }
     }
 }

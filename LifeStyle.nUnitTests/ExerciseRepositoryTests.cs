@@ -2,7 +2,8 @@
 using LifeStyle.LifeStyle.Aplication.Logic;
 using LifeStyle.LifeStyle.Domain.Enums;
 using LifeStyle.LifeStyle.Domain.Models.Exercises;
-
+using LifeStyle.LifeStyle.Domain.Models.Meal;
+using LifeStyle.LifeStyle.Domain.Models.Users;
 using Moq;
 
 
@@ -29,58 +30,55 @@ namespace LifeStyle.nUnitTests
         [Fact]
         public async Task Add_Adds_New_Exercise()
         {
-            // Arrange
-            var exerciseRepositoryMock = new Mock<IRepository<Exercise>>();
-            var exerciseRepository = exerciseRepositoryMock.Object;
-            var newExercise = new Exercise(4, "testupdate", 124, ExerciseType.Cardio);
+            var exerciseRepository = new InMemoryRepository<Exercise>();
+            var newExercise = new Exercise(1, "test", 120, ExerciseType.Cardio);
 
             // Act
             await exerciseRepository.Add(newExercise);
 
             // Assert
-            exerciseRepositoryMock.Verify(repo => repo.Add(newExercise), Times.Once);
+            var result = await exerciseRepository.GetAll();
+            Assert.Single(result);
+            Assert.Contains(newExercise, result);
         }
 
         [Fact]
         public async Task Remove_RemoveExercise()
         {
-            // Arrange
-            var exercise = new List<Exercise>
-        {
-            new(7, "test1", 124, ExerciseType.Cardio)
-        };
-            var exerciseRepositoryMock = new Mock<IRepository<Exercise>>();
-            exerciseRepositoryMock.Setup(repo => repo.GetById(1)).ReturnsAsync(exercise.First());
-            var exerciseRepository = exerciseRepositoryMock.Object;
-            var exerciseToRemove = exercise.First();
+          // Arrange
+            var userRepository = new InMemoryRepository<UserProfile>();
+            var userProfileToRemove = new UserProfile(1, "john@example.com", "123456789", 175, 70);
+            await userRepository.Add(userProfileToRemove);
 
             // Act
-            await exerciseRepository.Remove(exerciseToRemove);
+            await userRepository.Remove(userProfileToRemove);
 
             // Assert
-            exerciseRepositoryMock.Verify(repo => repo.Remove(exerciseToRemove), Times.Once);
+            var result = await userRepository.GetAll();
+            Assert.Empty(result);
         }
 
         [Fact]
         public async Task Update_UpdatesExistingExercise()
         {
             // Arrange
-            var exercise = new List<Exercise>
-        {
-            new Exercise(7,"testupdate", 124, ExerciseType.Cardio)
-        };
-            var exerciseRepositoryMock = new Mock<IRepository<Exercise>>();
-            exerciseRepositoryMock.Setup(repo => repo.GetById(1)).ReturnsAsync(exercise.First());
-            var exerciseRepository = exerciseRepositoryMock.Object;
-            var updatedMeal = new Exercise(1, "test", 120, ExerciseType.Cardio);
+            var userRepository = new InMemoryRepository<UserProfile>();
+            var initialProfile = new UserProfile(1, "john@example.com", "123456789", 180, 75);
+            await userRepository.Add(initialProfile);
+            var updatedProfile = new UserProfile(2, "john@example.com", "123456789", 180, 75);
 
             // Act
-            await exerciseRepository.Update(updatedMeal);
+            await userRepository.Update(updatedProfile);
 
             // Assert
-            exerciseRepositoryMock.Verify(repo => repo.Update(updatedMeal), Times.Once);
-
+            var result = (await userRepository.GetAll()).First();
+            Assert.Equal(updatedProfile.Email, result.Email);
+            Assert.Equal(updatedProfile.PhoneNumber, result.PhoneNumber);
+            Assert.Equal(updatedProfile.Height, result.Height);
+            Assert.Equal(updatedProfile.Weight, result.Weight);
         }
+
+    
 
         [Fact]
         public async Task GetById_ReturnsExerciseIfExists()
