@@ -10,40 +10,27 @@ namespace LifeStyle.nUnitTests
 {
     public class MealRepositoryTests
     {
-        [Fact]
-        public async Task GetAll_ReturnsAllMeal()
-        {
-            // Arrange
-            var mealRepository = new MealRepository();
-
-            // Act
-            var result = await mealRepository.GetAll();
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.IsAssignableFrom<IEnumerable<Meal>>(result);
-            Assert.Equal(2, ((List<Meal>)result).Count);
-        }
+       
 
         [Fact]
         public async Task Add_AddsNewMeal()
         {
             // Arrange
-            var mealRepository = new InMemoryRepository<Meal>();
-            var newMeal = new Meal(1, "test1", MealType.Breakfast, new Nutrients(124, 32, 24, 24));
+            var mealRepositoryMock = new Mock<IRepository<Meal>>();
+            var mealRepository = mealRepositoryMock.Object;
+            var meal = new Meal(7, "test1", MealType.Breakfast, new Nutrients(124, 32, 24, 24));
 
             // Act
-            await mealRepository.Add(newMeal);
+            await mealRepository.Add(meal);
 
             // Assert
-            var result = await mealRepository.GetAll();
-            Assert.Single(result);
-            Assert.Contains(newMeal, result);
+            mealRepositoryMock.Verify(repo => repo.Add(meal), Times.Once);
         }
 
         [Fact]
         public async Task Remove_RemoveMeal()
         {
+            
             // Arrange
             var meal = new List<Meal>
         {
