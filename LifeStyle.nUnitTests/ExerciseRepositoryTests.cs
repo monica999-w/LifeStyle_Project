@@ -1,9 +1,9 @@
-﻿using LifeStyle.LifeStyle.Aplication.Interfaces;
-using LifeStyle.LifeStyle.Aplication.Logic;
-using LifeStyle.LifeStyle.Domain.Enums;
-using LifeStyle.LifeStyle.Domain.Models.Exercises;
-using LifeStyle.LifeStyle.Domain.Models.Meal;
-using LifeStyle.LifeStyle.Domain.Models.Users;
+﻿using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Aplication.Logic;
+using LifeStyle.Domain.Enums;
+using LifeStyle.Domain.Models.Exercises;
+using LifeStyle.Domain.Models.Meal;
+using LifeStyle.Domain.Models.Users;
 using Moq;
 
 
