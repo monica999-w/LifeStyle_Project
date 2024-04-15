@@ -1,27 +1,23 @@
-using LifeStyle.LifeStyle.Aplication.Interfaces;
-using LifeStyle.LifeStyle.Aplication.Logic;
-using LifeStyle.LifeStyle.Domain.Models.Exercises;
-using LifeStyle.LifeStyle.Domain.Models.Meal;
-using LifeStyle.LifeStyle.Domain.Models.Users;
-using LifeStyle.Models.Planner;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
+using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Aplication.Logic;
+using LifeStyle.Domain.Models.Exercises;
+using LifeStyle.Domain.Models.Meal;
+using LifeStyle.Domain.Models.Users;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+builder.Services.AddSingleton<IRepository<Exercise>, ExerciseRepository>();
+builder.Services.AddSingleton<IRepository<Meal>, MealRepository>();
+builder.Services.AddSingleton<IRepository<UserProfile>, UserRepository>();
+builder.Services.AddSingleton<IPlannerRepository, PlannerRepository>();
+
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IPlannerRepository).Assembly));
 
 builder.Services.AddControllers();
-
-
-
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddScoped<IRepository<UserProfile>, UserRepository>();
-builder.Services.AddScoped<IRepository<Meal>,MealRepository>();
-builder.Services.AddScoped<IRepository<Exercise>, ExerciseRepository>();
-builder.Services.AddScoped<IPlannerRepository, PlannerRepository>();
+
 
 
 var app = builder.Build();
@@ -41,3 +37,4 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
