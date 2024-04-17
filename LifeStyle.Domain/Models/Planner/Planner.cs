@@ -1,21 +1,27 @@
 ﻿using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Users;
 using LifeStyle.Domain.Models.Meal;
+using System.ComponentModel.DataAnnotations;
 
 namespace LifeStyle.Models.Planner
 {
     public class Planner
     {
-        public UserProfile Profile { get; set; }
-        public List<Meal>? Meals { get; set; }
-        public List<Exercise>? Exercises { get; set; }
+        [Key]
+        public int PlannerId { get; set; }
+        public UserProfile Profile { get; set; } = new UserProfile();
+        public ICollection<Meal>? Meals { get; set; }
+        public ICollection<Exercise>? Exercises { get; set; }
 
-        public Planner(UserProfile profile)
+        public Planner() { }
+
+        public Planner(UserProfile profile )
         {
             Profile = profile;
             Meals = new List<Meal>();
             Exercises = new List<Exercise>();
         }
+
 
         public void AddMeal(Meal meal)
         {

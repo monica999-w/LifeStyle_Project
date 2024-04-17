@@ -24,7 +24,7 @@ namespace LifeStyle.Application.Commands
 
             var exercise = new Exercise
             (
-               id: GetNextId(),
+               exerciseId: GetNextId(),
                name: request.Name,
                durationInMinutes: request.DurationInMinutes,
                type: request.Type

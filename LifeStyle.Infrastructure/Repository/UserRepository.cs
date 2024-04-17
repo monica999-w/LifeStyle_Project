@@ -36,7 +36,7 @@ namespace LifeStyle.Aplication.Logic
         {
 
             await Task.Delay(0);
-            var existingProfile = await GetById(entity.Id);
+            var existingProfile = await GetById(entity.ProfileId);
             if (existingProfile != null)
             {
                 _userProfiles.Remove(existingProfile);
@@ -51,7 +51,7 @@ namespace LifeStyle.Aplication.Logic
         {
 
             await Task.Delay(0);
-            var existingProfile = await GetById(entity.Id);
+            var existingProfile = await GetById(entity.ProfileId);
             if (existingProfile != null)
             {
                 existingProfile.Email = entity.Email;
@@ -67,7 +67,7 @@ namespace LifeStyle.Aplication.Logic
 
         public async Task<UserProfile?> GetById(int id)
         {
-            UserProfile? userProfile = await Task.FromResult(_userProfiles.FirstOrDefault(u => u.Id == id));
+            UserProfile? userProfile = await Task.FromResult(_userProfiles.FirstOrDefault(u => u.ProfileId == id));
             if (userProfile == null)
             {
                 throw new KeyNotFoundException("User profile not found");
@@ -79,7 +79,7 @@ namespace LifeStyle.Aplication.Logic
         {
             if (_userProfiles.Any())
             {
-                return _userProfiles.Max(m => m.Id);
+                return _userProfiles.Max(m => m.ProfileId);
             }
             else
             {

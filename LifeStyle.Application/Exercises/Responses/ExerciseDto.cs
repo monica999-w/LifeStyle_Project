@@ -15,7 +15,7 @@ namespace LifeStyle.Application.Responses
         {
             return new ExerciseDto
             {
-                Id = exercise.Id,
+                Id = exercise.ExerciseId,
                 Name = exercise.Name,
                 DurationInMinutes = exercise.DurationInMinutes,
                 Type = exercise.Type

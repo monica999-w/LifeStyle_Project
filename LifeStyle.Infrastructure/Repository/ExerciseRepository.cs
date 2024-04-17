@@ -37,7 +37,7 @@ namespace LifeStyle.Aplication.Logic
         public async Task Remove(Exercise entity)
         {
             await Task.Delay(0);
-            var existingExercise = await GetById(entity.Id);
+            var existingExercise = await GetById(entity.ExerciseId);
             if (existingExercise != null)
             {
                 _exercises.Remove(existingExercise);
@@ -50,7 +50,7 @@ namespace LifeStyle.Aplication.Logic
 
         public async Task Update(Exercise entity)
         {
-            var existingExercise = await GetById(entity.Id);
+            var existingExercise = await GetById(entity.ExerciseId);
             if (existingExercise != null)
             {
 
@@ -67,7 +67,7 @@ namespace LifeStyle.Aplication.Logic
         public async Task<Exercise?> GetById(int id)
         {
             await Task.Delay(0);
-            var exercise = _exercises.FirstOrDefault(e => e.Id == id);
+            var exercise = _exercises.FirstOrDefault(e => e.ExerciseId == id);
             if (exercise == null)
             {
                 throw new KeyNotFoundException("Exercise not found");
@@ -79,7 +79,7 @@ namespace LifeStyle.Aplication.Logic
         {
             if (_exercises.Any())
             {
-                return _exercises.Max(m => m.Id);
+                return _exercises.Max(m => m.ExerciseId);
             }
             else
             {

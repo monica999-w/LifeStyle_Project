@@ -60,7 +60,7 @@ namespace LifeStyle.Application.Planners.Commands
 
             var planner = await _plannerRepository.GetPlannerByUser(user);
             if (planner == null)
-                throw new Exception($"Planner not found for user with ID {user.Id}");
+                throw new Exception($"Planner not found for user with ID {user.ProfileId}");
 
             
             if (meals.Any())

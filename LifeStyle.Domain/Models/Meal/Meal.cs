@@ -1,20 +1,29 @@
 ﻿using LifeStyle.Domain.Enums;
+using LifeStyle.Models.Planner;
+using System.ComponentModel.DataAnnotations;
 
 namespace LifeStyle.Domain.Models.Meal
 {
     public class Meal
     {
-        public int Id { get; set; }
-        public string Name { get; set; }
+        [Key]
+        public int MealId { get; set; }
+        [MaxLength(50)]
+        public string Name { get; set; } = string.Empty;
         public MealType MealType { get; set; }
-        public Nutrients Nutrients { get; set; }
-
-        public Meal(int id, string name, MealType mealType, Nutrients nutrients)
+        public Nutrients Nutrients { get; set; } = new Nutrients();
+       
+         public Meal()
         {
-            Id = id;
+        }
+
+        public Meal(int mealId, string name, MealType mealType, Nutrients nutrients)
+        {
+            MealId = mealId;
             Name = name;
             MealType = mealType;
             Nutrients = nutrients;
         }
+
     }
 }

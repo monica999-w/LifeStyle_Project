@@ -25,7 +25,7 @@ namespace LifeStyle.Application.Commands
 
             var meal = new Meal
             (
-               id: GetNextId(),
+               mealId: GetNextId(),
                name: request.Name,
                mealType: request.MealType,
                nutrients: request.Nutrients

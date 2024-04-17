@@ -16,7 +16,7 @@ namespace LifeStyle.Application.Responses
         {
             return new MealDto
             {
-                Id = meal.Id,
+                Id = meal.MealId,
                 Name = meal.Name,
                 MealType = meal.MealType,
                 Nutrients = meal.Nutrients

@@ -16,8 +16,8 @@ namespace LifeStyle.Aplication.Logic
         public MealRepository()
         {
 
-            _meals.Add(new Meal(1, "Oatmeal", MealType.Breakfast, new Nutrients(144.0, 5.0, 30.0, 2.5)));
-            _meals.Add(new Meal(2, "Chicken Salad", MealType.Lunch, new Nutrients(255.1, 25.0, 10.0, 15.0)));
+            _meals.Add(new Meal(1, "Oatmeal", MealType.Breakfast, new Nutrients(1,144.0, 5.0, 30.0, 2.5)));
+            _meals.Add(new Meal(2, "Chicken Salad", MealType.Lunch, new Nutrients(2,255.1, 25.0, 10.0, 15.0)));
 
         }
 
@@ -36,7 +36,7 @@ namespace LifeStyle.Aplication.Logic
         public async Task Remove(Meal entity)
         {
             await Task.Delay(0);
-            var existingMeal = await GetById(entity.Id);
+            var existingMeal = await GetById(entity.MealId);
             if (existingMeal != null)
             {
                 _meals.Remove(existingMeal);
@@ -49,7 +49,7 @@ namespace LifeStyle.Aplication.Logic
 
         public async Task Update(Meal entity)
         {
-            var existingMeal = await GetById(entity.Id);
+            var existingMeal = await GetById(entity.MealId);
             if (existingMeal != null)
             {
 
@@ -66,7 +66,7 @@ namespace LifeStyle.Aplication.Logic
         public async Task<Meal?> GetById(int id)
         {
             await Task.Delay(0);
-            var meal = _meals.FirstOrDefault(m => m.Id == id);
+            var meal = _meals.FirstOrDefault(m => m.MealId == id);
             if (meal == null)
             {
                 throw new KeyNotFoundException("Meal not found");
@@ -78,7 +78,7 @@ namespace LifeStyle.Aplication.Logic
         {
             if (_meals.Any())
             {
-                return _meals.Max(m => m.Id);
+                return _meals.Max(m => m.MealId);
             }
             else
             {

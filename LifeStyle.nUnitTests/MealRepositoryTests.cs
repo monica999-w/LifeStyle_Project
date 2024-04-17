@@ -18,7 +18,7 @@ namespace LifeStyle.nUnitTests
             // Arrange
             var mealRepositoryMock = new Mock<IRepository<Meal>>();
             var mealRepository = mealRepositoryMock.Object;
-            var meal = new Meal(7, "test1", MealType.Breakfast, new Nutrients(124, 32, 24, 24));
+            var meal = new Meal(7, "test1", MealType.Breakfast, new Nutrients(1, 124, 32, 24, 24));
 
             // Act
             await mealRepository.Add(meal);
@@ -34,7 +34,7 @@ namespace LifeStyle.nUnitTests
             // Arrange
             var meal = new List<Meal>
         {
-            new Meal(7, "test1",MealType.Breakfast, new Nutrients(124,32,24,24))
+            new Meal(7, "test1",MealType.Breakfast, new Nutrients(1, 124,32,24,24))
         };
             var mealRepositoryMock = new Mock<IRepository<Meal>>();
             mealRepositoryMock.Setup(repo => repo.GetById(1)).ReturnsAsync(meal.First());
@@ -54,12 +54,12 @@ namespace LifeStyle.nUnitTests
             // Arrange
             var meal = new List<Meal>
         {
-            new Meal(7, "test1",MealType.Breakfast, new Nutrients(124,32,24,24))
+            new Meal(7, "test1",MealType.Breakfast, new Nutrients(1, 124,32,24,24))
         };
             var mealRepositoryMock = new Mock<IRepository<Meal>>();
             mealRepositoryMock.Setup(repo => repo.GetById(1)).ReturnsAsync(meal.First());
             var userRepository = mealRepositoryMock.Object;
-            var updatedMeal = new Meal(1, "test1", MealType.Breakfast, new Nutrients(124, 32, 24, 24));
+            var updatedMeal = new Meal(1, "test1", MealType.Breakfast, new Nutrients(1,124, 32, 24, 24));
 
             // Act
             await userRepository.Update(updatedMeal);
@@ -75,7 +75,7 @@ namespace LifeStyle.nUnitTests
             // Arrange
             var meal = new List<Meal>
         {
-            new(1, "test1", MealType.Breakfast, new Nutrients(124, 32, 24, 24))
+            new(1, "test1", MealType.Breakfast, new Nutrients(1, 124, 32, 24, 24))
         };
             var mealRepositoryMock = new Mock<IRepository<Meal>>();
             mealRepositoryMock.Setup(repo => repo.GetById(1)).ReturnsAsync(meal.First());

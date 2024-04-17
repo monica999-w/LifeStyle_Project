@@ -20,7 +20,7 @@ namespace LifeStyle.Application.Responses
         {
             return new UserDto
             {
-                Id = userProfile.Id,
+                Id = userProfile.ProfileId,
                 Email = userProfile.Email,
                 PhoneNumber = userProfile.PhoneNumber,
                 Height = userProfile.Height,
