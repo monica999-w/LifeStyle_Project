@@ -1,4 +1,4 @@
-﻿using LifeStyle.Aplication.Interfaces;
+﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Enums;
 using LifeStyle.Domain.Models.Meal;
@@ -11,33 +11,56 @@ namespace LifeStyle.Application.Commands
 
     public class CreateMealHandler : IRequestHandler<CreateMeal, MealDto>
     {
-       
-        private readonly IRepository<Meal> _mealRepository;
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IRequestHandler<CreateNutrient, NutrientDto> _createNutrientHandler;
 
-
-        public CreateMealHandler(IRepository<Meal> mealRepository)
+        public CreateMealHandler(IUnitOfWork unitOfWork, IRequestHandler<CreateNutrient, NutrientDto> createNutrientHandler)
         {
-            _mealRepository = mealRepository;
+            _unitOfWork = unitOfWork;
+            _createNutrientHandler = createNutrientHandler;
         }
 
         public async Task<MealDto> Handle(CreateMeal request, CancellationToken cancellationToken)
         {
+            try
+            {
+                Nutrients nutrient;
 
-            var meal = new Meal
-            (
-               mealId: GetNextId(),
-               name: request.Name,
-               mealType: request.MealType,
-               nutrients: request.Nutrients
-            );
+                var existingNutrient = await _unitOfWork.NutrientRepository.GetById(request.Nutrients.NutrientId);
+                if (existingNutrient != null)
+                {
+                    nutrient = existingNutrient;
+                }
+                else
+                {
+                    var nutrientDto = await _createNutrientHandler.Handle(
+                    new CreateNutrient(request.Nutrients.Calories, request.Nutrients.Protein, request.Nutrients.Carbohydrates, request.Nutrients.Fat),
+                    cancellationToken);
+                    nutrient= NutrientDto.FromNutrientDto(nutrientDto);
 
-            await _mealRepository.Add(meal);
-            return MealDto.FromMeal(meal);
-        }
-        private int GetNextId()
-        {
-            var lastId = _mealRepository.GetLastId();
-            return lastId + 1; 
+                }
+                    var newMeal = new Meal
+                    {
+                        Name = request.Name,
+                        MealType = request.MealType,
+                        Nutrients = nutrient
+                    };
+                
+
+                    await _unitOfWork.BeginTransactionAsync();
+                    await _unitOfWork.MealRepository.Add(newMeal);
+                    await _unitOfWork.SaveAsync();
+                    await _unitOfWork.CommitTransactionAsync();
+
+
+                    return MealDto.FromMeal(newMeal);
+                
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Failed to create meal", ex);
+            }
         }
     }
 }

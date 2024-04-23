@@ -12,6 +12,7 @@ namespace LifeStyle.Infrastructure.Context
 {
     public class LifeStyleContext : DbContext
     {
+        public LifeStyleContext(DbContextOptions options) : base(options) { }
 
         public DbSet<UserProfile> UserProfiles { get; set; } = default!;
         public DbSet<Exercise> Exercises { get; set; } = default!;
@@ -19,17 +20,11 @@ namespace LifeStyle.Infrastructure.Context
         public DbSet<Meal> Meals { get; set; } = default!;
         public DbSet<Planner> Planners { get; set; } = default!;
 
-        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        {
-            optionsBuilder
-                .UseSqlServer(@"Server = (localdb)\projectmodels; Database = LifeStyle;Trusted_Connection=True;")
-                .LogTo(Console.WriteLine, new[] { DbLoggerCategory.Database.Name },
-                       LogLevel.Information);
-        }
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new PlannerEntityTypeConfiguration());
+           modelBuilder.ApplyConfiguration(new PlannerEntityTypeConfiguration());
 
         }
     }

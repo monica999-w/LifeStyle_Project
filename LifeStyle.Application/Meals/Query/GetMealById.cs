@@ -1,12 +1,8 @@
-﻿using LifeStyle.Aplication.Interfaces;
+﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
-using LifeStyle.Domain.Models.Meal;
+
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace LifeStyle.Application.Meals.Query
 {
@@ -14,16 +10,16 @@ namespace LifeStyle.Application.Meals.Query
 
     public class GetMealByIdHandler : IRequestHandler<GetMealById, MealDto>
     {
-        private readonly IRepository<Meal> _mealRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetMealByIdHandler(IRepository<Meal> mealRepository)
+        public GetMealByIdHandler(IUnitOfWork unitOfWork)
         {
-            _mealRepository = mealRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<MealDto> Handle(GetMealById request, CancellationToken cancellationToken)
         {
-            var meal = await _mealRepository.GetById(request.MealId);
+            var meal = await _unitOfWork.MealRepository.GetById(request.MealId);
             if (meal == null)
                 throw new Exception($"Meal with ID {request.MealId} not found");
 

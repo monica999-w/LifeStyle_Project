@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Application.Abstractions;
 using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
@@ -12,24 +13,42 @@ namespace LifeStyle.Application.Users.Commands
     public class DeleteUserHandler : IRequestHandler<DeleteUser, Unit>
     {
 
-        private readonly IRepository<UserProfile> _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
 
-        public DeleteUserHandler(IRepository<UserProfile> mealRepository)
+        public DeleteUserHandler(IUnitOfWork unitOfWork)
         {
-            _userRepository = mealRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<Unit> Handle(DeleteUser request, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.GetById(request.UserId);
-            if (user == null)
+
+            try
             {
-                throw new KeyNotFoundException("Exercise not found");
+                var user = await _unitOfWork.UserProfileRepository.GetById(request.UserId);
+
+                if (user == null)
+                {
+                    throw new Exception("User not found");
+                }
+
+                await _unitOfWork.BeginTransactionAsync();
+
+                await _unitOfWork.UserProfileRepository.Remove(user);
+
+                await _unitOfWork.SaveAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                return Unit.Value;
             }
 
-            await _userRepository.Remove(user);
-            return Unit.Value;
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Failed to delete user", ex);
+            }
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Users;
@@ -14,16 +15,16 @@ namespace LifeStyle.Application.Exercises.Query
     public record GetAllExercise : IRequest<List<ExerciseDto>>;
     public class GetAllExercisesHandler : IRequestHandler<GetAllExercise, List<ExerciseDto>>
     {
-        private readonly IRepository<Exercise> _exerciseRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetAllExercisesHandler(IRepository<Exercise> exerciseRepository)
+        public GetAllExercisesHandler(IUnitOfWork unitOfWork)
         {
-            _exerciseRepository = exerciseRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<ExerciseDto>> Handle(GetAllExercise request, CancellationToken cancellationToken)
         {
-            var exercise = await _exerciseRepository.GetAll(); 
+            var exercise = await _unitOfWork.ExerciseRepository.GetAll(); 
             return exercise.Select(ExerciseDto.FromExercise).ToList();
         }
     }

@@ -1,5 +1,4 @@
 ﻿using LifeStyle.Domain.Enums;
-using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
 
 
@@ -8,30 +7,22 @@ namespace LifeStyle.Application.Responses
     public class MealDto
     {
         public int Id { get; set; }
-        public string Name { get; set; }
+        public string? Name { get; set; }
         public MealType MealType { get; set; }
-        public required Nutrients Nutrients { get; set; }
+        public NutrientDto? Nutrients { get; set; }
 
         public static MealDto FromMeal(Meal meal)
         {
+           
+            var nutrientsDto = meal.Nutrients != null ? NutrientDto.FromNutrient(meal.Nutrients) : null;
+
             return new MealDto
             {
                 Id = meal.MealId,
                 Name = meal.Name,
                 MealType = meal.MealType,
-                Nutrients = meal.Nutrients
+                Nutrients = nutrientsDto
             };
-        }
-
-        public static Meal FromMealDto(MealDto mealDto)
-        {
-            return new Meal
-                (
-                 mealDto.Id,
-                 mealDto.Name,
-                 mealDto.MealType,
-                 mealDto.Nutrients
-                 );
         }
     }
 }

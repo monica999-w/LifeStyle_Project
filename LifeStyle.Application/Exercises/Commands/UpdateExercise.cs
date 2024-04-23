@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Enums;
 using LifeStyle.Domain.Models.Exercises;
@@ -11,28 +12,45 @@ namespace LifeStyle.Application.Commands
 
     public class UpdateExerciseHandler : IRequestHandler<UpdateExercise, ExerciseDto>
     {
-      
-        private readonly IRepository<Exercise> _exerciseRepository;
 
-        public UpdateExerciseHandler(IRepository<Exercise> exerciseRepository)
+        private readonly IUnitOfWork _unitOfWork;
+
+        public UpdateExerciseHandler(IUnitOfWork unitOfWork)
         {
-            _exerciseRepository = exerciseRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ExerciseDto> Handle(UpdateExercise request, CancellationToken cancellationToken)
         {
-            var exercise = await _exerciseRepository.GetById(request.ExerciseId);
-            if (exercise == null)
+
+            try
             {
-                throw new KeyNotFoundException($"Exercise with ID {request.ExerciseId} not found");
+                var exercise = await _unitOfWork.ExerciseRepository.GetById(request.ExerciseId);
+                if (exercise == null)
+                {
+                    throw new Exception($"Exercise with ID {request.ExerciseId} not found");
+                }
+
+                exercise.Name = request.Name;
+                exercise.DurationInMinutes = request.DurationInMinutes;
+                exercise.Type = request.Type;
+
+                await _unitOfWork.BeginTransactionAsync();
+
+                await _unitOfWork.ExerciseRepository.Update(exercise);
+
+                await _unitOfWork.SaveAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                return ExerciseDto.FromExercise(exercise);
             }
-
-            exercise.Name = request.Name;
-            exercise.DurationInMinutes = request.DurationInMinutes;
-            exercise.Type = request.Type;
-
-            await _exerciseRepository.Update(exercise);
-            return ExerciseDto.FromExercise(exercise);
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Fail update exercise", ex);
+            }
+            
         }
     }
 }

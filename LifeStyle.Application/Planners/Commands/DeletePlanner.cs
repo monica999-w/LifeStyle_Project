@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
@@ -12,72 +13,80 @@ namespace LifeStyle.Application.Planners.Commands
 
     public class DeletePlannerHandler : IRequestHandler<DeletePlanner, bool>
     {
-        private readonly IPlannerRepository _plannerRepository;
-        private readonly IRepository<UserProfile> _userRepository;
-        private readonly IRepository<Meal> _mealRepository;
-        private readonly IRepository<Exercise> _exerciseRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public DeletePlannerHandler(IPlannerRepository plannerRepository, IRepository<UserProfile> userRepository, IRepository<Meal> mealRepository, IRepository<Exercise> exerciseRepository)
+
+        public DeletePlannerHandler(IUnitOfWork unitOfWork)
         {
-            _plannerRepository = plannerRepository;
-            _userRepository = userRepository;
-            _mealRepository = mealRepository;
-            _exerciseRepository = exerciseRepository;
+          _unitOfWork = unitOfWork;
         }
 
         public async Task<bool> Handle(DeletePlanner request, CancellationToken cancellationToken)
         {
-            
-            var user = await _userRepository.GetById(request.UserId);
-            if (user == null)
-                throw new Exception($"User with ID {request.UserId} not found");
+            try {
 
-            Meal? mealToRemove = null;
-            Exercise? exerciseToRemove = null;
+                var user = await _unitOfWork.UserProfileRepository.GetById(request.UserId);
+                if (user == null)
+                    throw new Exception($"User with ID {request.UserId} not found");
 
-            if (request.MealId.HasValue)
+                Meal? mealToRemove = null;
+                Exercise? exerciseToRemove = null;
+
+                if (request.MealId.HasValue)
+                {
+                    mealToRemove = await _unitOfWork.MealRepository.GetById(request.MealId.Value);
+                    if (mealToRemove == null)
+                        throw new Exception($"Meal with ID {request.MealId} not found");
+                }
+
+                if (request.ExerciseId.HasValue)
+                {
+                    exerciseToRemove = await _unitOfWork.ExerciseRepository.GetById(request.ExerciseId.Value);
+                    if (exerciseToRemove == null)
+                        throw new Exception($"Exercise with ID {request.ExerciseId} not found");
+                }
+
+
+                var planner = await _unitOfWork.PlannerRepository.GetPlannerByUser(user);
+                if (planner == null)
+                    throw new Exception($"Planner not found for user with ID {user.ProfileId}");
+
+                await _unitOfWork.BeginTransactionAsync();
+
+                if (mealToRemove != null)
+                {
+                   await _unitOfWork.PlannerRepository.RemoveMealAsync(mealToRemove);
+                }
+
+                if (exerciseToRemove != null)
+                {
+                    await _unitOfWork.PlannerRepository.RemoveExerciseAsync(exerciseToRemove);
+                }
+
+                if (mealToRemove == null && exerciseToRemove == null)
+                {
+
+                    await _unitOfWork.PlannerRepository.RemovePlanner(planner);
+                }
+                else
+                {
+
+                    await _unitOfWork.PlannerRepository.UpdatePlannerAsync(planner);
+                }
+
+                await _unitOfWork.SaveAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                return true;
+
+            } 
+            catch (Exception ex)
             {
-                mealToRemove = await _mealRepository.GetById(request.MealId.Value);
-                if (mealToRemove == null)
-                    throw new Exception($"Meal with ID {request.MealId} not found");
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Failed to delete planner", ex);
             }
-
-            if (request.ExerciseId.HasValue)
-            {
-                exerciseToRemove = await _exerciseRepository.GetById(request.ExerciseId.Value);
-                if (exerciseToRemove == null)
-                    throw new Exception($"Exercise with ID {request.ExerciseId} not found");
-            }
-
-          
-            var planner = await _plannerRepository.GetPlannerByUser(user);
-            if (planner == null)
-                throw new Exception($"Planner not found for user with ID {user.ProfileId}");
-
-            
-            if (mealToRemove != null)
-            {
-                planner.RemoveMeal(mealToRemove);
-            }
-
-            if (exerciseToRemove != null)
-            {
-                planner.RemoveExercise(exerciseToRemove);
-            }
-
-            if (mealToRemove == null && exerciseToRemove == null)
-            {
-                
-                await _plannerRepository.RemovePlanner(planner);
-            }
-            else
-            {
-                
-                await _plannerRepository.UpdatePlannerAsync(planner);
-            }
-
-            return true;
-        }
+        }   
     }
 
 }

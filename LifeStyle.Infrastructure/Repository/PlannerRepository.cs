@@ -4,39 +4,61 @@ using LifeStyle.Domain.Models.Users;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Models.Planner;
+using LifeStyle.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace LifeStyle.Aplication.Logic
 {
     public class PlannerRepository : IPlannerRepository
     {
-        private readonly List<Planner>? _planners = new List<Planner>();
+        private readonly LifeStyleContext _lifeStyleContext;
 
-        
-        public Task AddPlanner(Planner planner)
+        public PlannerRepository(LifeStyleContext lifeStyleContext)
         {
-            _planners?.Add(planner);
-            return Task.CompletedTask;
+            _lifeStyleContext = lifeStyleContext;
         }
 
-        public Task RemovePlanner(Planner planner)
+        public  async Task<Planner> AddPlanner(Planner planner)
         {
-            _planners?.Remove(planner);
-            return Task.CompletedTask;
+            _lifeStyleContext.Planners.Add(planner);
+            await _lifeStyleContext.SaveChangesAsync();
+            return planner;
         }
 
-        public Task<Planner> GetPlannerByUser(UserProfile profile)
+        public async Task<Planner> RemovePlanner(Planner planner)
         {
-            return Task.FromResult(_planners.FirstOrDefault(p => p.Profile == profile));
+
+            var existingMeal = await GetPlannerByUser(planner.Profile);
+            if (existingMeal != null)
+            {
+                _lifeStyleContext.Planners.Remove(existingMeal);
+            }
+            else
+            {
+                throw new Exception("Meal not found");
+            }
+            return planner;
+        }
+
+        public async Task<Planner?> GetPlannerByUser(UserProfile profile)
+        {
+            var planner = await _lifeStyleContext.Planners
+                .FirstOrDefaultAsync(p => p.Profile == profile);
+            return planner;
         }
 
         public async Task<IEnumerable<Planner>> GetAll()
         {
-            await Task.Delay(0);
-            return _planners;
+           
+            return await _lifeStyleContext.Planners
+                 .Include(meal => meal.Meals)
+                 .Include(exercise => exercise.Exercises)
+                 .Include(user => user.Profile)
+                .ToListAsync();
         }
 
 
-        public async Task UpdatePlannerAsync(Planner planner)
+        public async Task<Planner?> UpdatePlannerAsync(Planner planner)
         {
 
             var existingPlanner = await GetPlannerByUser(planner.Profile);
@@ -46,8 +68,38 @@ namespace LifeStyle.Aplication.Logic
                 existingPlanner.Exercises = planner.Exercises;
 
             }
+            else
+            {
+                throw new Exception("Planner not found");
+            }
+            return planner;
 
         }
+
+       public async Task RemoveMealAsync(Meal meal)
+        {
+            var plannerContainingMeal = await _lifeStyleContext.Planners
+                .Include(p => p.Meals)
+                .FirstOrDefaultAsync(p => p.Meals.Any(m => m.MealId == meal.MealId));
+
+            if (plannerContainingMeal != null)
+            {
+                plannerContainingMeal?.Meals.Remove(meal);
+            }
+        }
+
+        public async Task RemoveExerciseAsync(Exercise exercise)
+        {
+            var plannerContainingExercise = await _lifeStyleContext.Planners
+                .Include(p => p.Exercises)
+                .FirstOrDefaultAsync(p => p.Exercises.Any(e => e.ExerciseId == exercise.ExerciseId));
+
+            if (plannerContainingExercise != null)
+            {
+                plannerContainingExercise?.Exercises.Remove(exercise);
+            }
+        }
+       
     }
 }
 

@@ -1,14 +1,7 @@
-﻿using LifeStyle.Aplication.Interfaces;
+﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
-using LifeStyle.Domain.Enums;
-using LifeStyle.Domain.Models.Meal;
-using LifeStyle.Domain.Models.Users;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace LifeStyle.Application.Users.Commands
 {
@@ -18,28 +11,45 @@ namespace LifeStyle.Application.Users.Commands
     public class UpdateUserHandler : IRequestHandler<UpdateUser, UserDto>
     {
 
-        private readonly IRepository<UserProfile> _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public UpdateUserHandler(IRepository<UserProfile> userRepository)
+        public UpdateUserHandler(IUnitOfWork unitOfWork)
         {
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<UserDto> Handle(UpdateUser request, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.GetById(request.UserId);
-            if (user == null)
+
+            try
             {
-                throw new KeyNotFoundException($"User with ID {request.UserId} not found");
+                var user = await _unitOfWork.UserProfileRepository.GetById(request.UserId);
+                if (user == null)
+                {
+                    throw new KeyNotFoundException($"User with ID {request.UserId} not found");
+                }
+
+                user.Email = request.Email;
+                user.PhoneNumber = request.PhoneNumber;
+                user.Height = request.Height;
+                user.Weight = request.Weight;
+
+
+                await _unitOfWork.BeginTransactionAsync();
+                await _unitOfWork.UserProfileRepository.Update(user);
+
+                await _unitOfWork.SaveAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                return UserDto.FromUser(user);
             }
 
-            user.Email = request.Email;
-            user.PhoneNumber = request.PhoneNumber;
-            user.Height = request.Height;
-            user.Weight = request.Weight;
-
-            await _userRepository.Update(user);
-            return UserDto.FromUser(user);
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Fail update user", ex);
+            }
         }
     }
 }

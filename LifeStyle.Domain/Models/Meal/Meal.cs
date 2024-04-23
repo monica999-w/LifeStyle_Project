@@ -1,5 +1,4 @@
 ﻿using LifeStyle.Domain.Enums;
-using LifeStyle.Models.Planner;
 using System.ComponentModel.DataAnnotations;
 
 namespace LifeStyle.Domain.Models.Meal
@@ -9,9 +8,9 @@ namespace LifeStyle.Domain.Models.Meal
         [Key]
         public int MealId { get; set; }
         [MaxLength(50)]
-        public string Name { get; set; } = string.Empty;
+        public string? Name { get; set; } 
         public MealType MealType { get; set; }
-        public Nutrients Nutrients { get; set; } = new Nutrients();
+        public Nutrients? Nutrients { get; set; } 
        
          public Meal()
         {

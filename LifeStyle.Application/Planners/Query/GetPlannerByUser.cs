@@ -1,30 +1,23 @@
-﻿using LifeStyle.Aplication.Interfaces;
+﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Planners.Responses;
-using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static LifeStyle.Application.Responses.UserDto;
 
 namespace LifeStyle.Application.Planners.Query
 {
     public record GetPlannersByUser(UserProfile UserProfile) : IRequest<List<PlannerDto>>;
     public class GetPlannersByUserHandler : IRequestHandler<GetPlannersByUser, List<PlannerDto>>
     {
-        private readonly IPlannerRepository _plannerRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetPlannersByUserHandler(IPlannerRepository plannerRepository)
+        public GetPlannersByUserHandler(IUnitOfWork unitOfWork)
         {
-            _plannerRepository = plannerRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<PlannerDto>> Handle(GetPlannersByUser request, CancellationToken cancellationToken)
         {
-            var planner = await _plannerRepository.GetPlannerByUser(request.UserProfile);
+            var planner = await _unitOfWork.PlannerRepository.GetPlannerByUser(request.UserProfile);
             if (planner == null)
                 return new List<PlannerDto>();
 

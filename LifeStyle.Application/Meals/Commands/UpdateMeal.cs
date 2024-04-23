@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Enums;
 using LifeStyle.Domain.Models.Meal;
@@ -11,28 +12,47 @@ namespace LifeStyle.Application.Commands
 
     public class UpdateMealHandler : IRequestHandler<UpdateMeal, MealDto>
     {
-     
-        private readonly IRepository<Meal> _mealRepository;
 
-        public UpdateMealHandler(IRepository<Meal> mealRepository)
+        private readonly IUnitOfWork _unitOfWork;
+
+        public UpdateMealHandler(IUnitOfWork unitOfWork)
         {
-            _mealRepository = mealRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<MealDto> Handle(UpdateMeal request, CancellationToken cancellationToken)
         {
-            var meal = await _mealRepository.GetById(request.MealId);
-            if (meal == null)
+
+            try
             {
-                throw new KeyNotFoundException($"Meal with ID {request.MealId} not found");
+                var meal = await _unitOfWork.MealRepository.GetById(request.MealId);
+                if (meal == null)
+                {
+                    throw new Exception($"Meal with ID {request.MealId} not found");
+                }
+
+                meal.Name=request.Name;
+                meal.MealType=request.MealType;
+                meal.Nutrients=request.Nutrients;
+
+
+
+                await _unitOfWork.BeginTransactionAsync();
+
+                await _unitOfWork.MealRepository.Update(meal);
+
+                await _unitOfWork.SaveAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                return MealDto.FromMeal(meal);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Fail update meal", ex);
             }
 
-            meal.Name = request.Name;
-            meal.MealType = request.MealType;
-            meal.Nutrients = request.Nutrients;
-
-            await _mealRepository.Update(meal);
-            return MealDto.FromMeal(meal);
         }
     }
 }

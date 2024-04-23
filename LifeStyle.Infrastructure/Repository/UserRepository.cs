@@ -1,53 +1,56 @@
 ﻿using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Users;
+using LifeStyle.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
 
 
 namespace LifeStyle.Aplication.Logic
 {
     public class UserRepository : IRepository<UserProfile>
     {
-        private readonly List<UserProfile> _userProfiles = new List<UserProfile>();
+        private readonly LifeStyleContext _lifeStyleContext;
 
 
-        public UserRepository()
+
+        public UserRepository(LifeStyleContext lifeStyleContext)
         {
 
-            _userProfiles.Add(new UserProfile(1, "john@example.com", "123456789", 175, 70));
-            _userProfiles.Add(new UserProfile(2, "jane@example.com", "987654321", 160, 55));
+          _lifeStyleContext = lifeStyleContext;
            
         }
 
         public async Task<IEnumerable<UserProfile>> GetAll()
         {
-
-            await Task.Delay(0);
-            return _userProfiles;
+            return await _lifeStyleContext.UserProfiles
+                .ToListAsync();
         }
 
-        public async Task Add(UserProfile entity)
+        public async Task<UserProfile> Add(UserProfile entity)
         {
 
-            await Task.Delay(0);
-            _userProfiles.Add(entity);
+            _lifeStyleContext.UserProfiles.Add(entity);
+            await _lifeStyleContext.SaveChangesAsync();
+            return entity;
         }
 
-        public async Task Remove(UserProfile entity)
+        public async Task<UserProfile> Remove(UserProfile entity)
         {
 
             await Task.Delay(0);
             var existingProfile = await GetById(entity.ProfileId);
             if (existingProfile != null)
             {
-                _userProfiles.Remove(existingProfile);
+                _lifeStyleContext.UserProfiles.Remove(existingProfile);
             }
             else
             {
-                throw new KeyNotFoundException("User profile not found");
+                throw new Exception("User profile not found");
             }
+            return entity;
         }
 
-        public async Task Update(UserProfile entity)
+        public async Task<UserProfile> Update(UserProfile entity)
         {
 
             await Task.Delay(0);
@@ -63,28 +66,37 @@ namespace LifeStyle.Aplication.Logic
             {
                 throw new KeyNotFoundException("User profile not found");
             }
+            return entity;  
         }
 
         public async Task<UserProfile?> GetById(int id)
         {
-            UserProfile? userProfile = await Task.FromResult(_userProfiles.FirstOrDefault(u => u.ProfileId == id));
+            UserProfile? userProfile = await Task.FromResult(_lifeStyleContext.UserProfiles.FirstOrDefault(u => u.ProfileId == id));
             if (userProfile == null)
             {
-                throw new KeyNotFoundException("User profile not found");
+                throw new Exception("User profile not found");
             }
             return userProfile;
         }
 
         public int GetLastId()
         {
-            if (_userProfiles.Any())
+            if (_lifeStyleContext.UserProfiles.Any())
             {
-                return _userProfiles.Max(m => m.ProfileId);
+                return _lifeStyleContext.UserProfiles.Max(m => m.ProfileId);
             }
             else
             {
                 return 0;
             }
+        }
+
+        public async Task<UserProfile> GetByName(string name)
+        {
+            var user = await _lifeStyleContext.UserProfiles
+                 .FirstOrDefaultAsync(e => e.Email == name);
+
+            return user;
         }
     }
 }

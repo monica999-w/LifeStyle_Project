@@ -1,9 +1,8 @@
 ﻿using LifeStyle.Domain.Enums;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Aplication.Interfaces;
-using LifeStyle.Domain.Models.Meal;
-
-
+using LifeStyle.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace LifeStyle.Aplication.Logic
 {
@@ -11,44 +10,43 @@ namespace LifeStyle.Aplication.Logic
     public class ExerciseRepository : IRepository<Exercise>
     {
 
-        private readonly List<Exercise> _exercises = new List<Exercise>();
+        private readonly LifeStyleContext _lifeStyleContext;
 
-        public ExerciseRepository()
+        public ExerciseRepository(LifeStyleContext lifeStyleContext)
         {
-
-            _exercises.Add(new Exercise(1, "Running", 30, ExerciseType.Cardio));
-            _exercises.Add(new Exercise(2, "Weightlifting", 45, ExerciseType.Yoga));
-            _exercises.Add(new Exercise(3, "Yoga", 60, ExerciseType.Cardio));
-
+            _lifeStyleContext = lifeStyleContext;
         }
 
         public async Task<IEnumerable<Exercise>> GetAll()
         {
-            await Task.Delay(0);
-            return _exercises;
+           
+            return await _lifeStyleContext.Exercises
+                .ToListAsync();
         }
 
-        public async Task Add(Exercise entity)
+        public async Task<Exercise> Add(Exercise entity)
         {
-            await Task.Delay(0);
-            _exercises.Add(entity);
+            _lifeStyleContext.Exercises.Add(entity);
+            await _lifeStyleContext.SaveChangesAsync();
+            return entity;
         }
 
-        public async Task Remove(Exercise entity)
+        public async Task<Exercise> Remove(Exercise entity)
         {
-            await Task.Delay(0);
+          
             var existingExercise = await GetById(entity.ExerciseId);
             if (existingExercise != null)
             {
-                _exercises.Remove(existingExercise);
+                _lifeStyleContext.Exercises.Remove(existingExercise);
             }
             else
             {
-                throw new KeyNotFoundException("Meal not found");
+                throw new Exception("Exercise not found");
             }
+            return entity;
         }
 
-        public async Task Update(Exercise entity)
+        public async Task<Exercise> Update(Exercise entity)
         {
             var existingExercise = await GetById(entity.ExerciseId);
             if (existingExercise != null)
@@ -60,26 +58,34 @@ namespace LifeStyle.Aplication.Logic
             }
             else
             {
-                throw new KeyNotFoundException("Exercise not found");
+                throw new Exception("Exercise not found");
             }
+            return entity;
         }
 
         public async Task<Exercise?> GetById(int id)
         {
-            await Task.Delay(0);
-            var exercise = _exercises.FirstOrDefault(e => e.ExerciseId == id);
-            if (exercise == null)
-            {
-                throw new KeyNotFoundException("Exercise not found");
-            }
+          
+            var exercise = await _lifeStyleContext.Exercises
+                .FirstOrDefaultAsync(e => e.ExerciseId == id);
+          
             return exercise;
         }
 
+        public async Task<Exercise> GetByName(string name)
+        {
+            var exercise = await _lifeStyleContext.Exercises
+                .FirstOrDefaultAsync(e => e.Name == name);
+
+            return exercise;
+        }
+
+
         public int GetLastId()
         {
-            if (_exercises.Any())
+            if (_lifeStyleContext.Exercises.Any())
             {
-                return _exercises.Max(m => m.ExerciseId);
+                return _lifeStyleContext.Exercises.Max(m => m.ExerciseId);
             }
             else
             {

@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
@@ -13,16 +14,16 @@ namespace LifeStyle.Application.Users.Query
     public record GetUserById(int UserId) : IRequest<UserDto>;
     public class GetUserByIdHandler : IRequestHandler<GetUserById, UserDto>
     {
-        private readonly IRepository<UserProfile> _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetUserByIdHandler(IRepository<UserProfile> userRepository)
+        public GetUserByIdHandler(IUnitOfWork unitOfWork)
         {
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<UserDto> Handle(GetUserById request, CancellationToken cancellationToken)
         {
-            var user = await _userRepository.GetById(request.UserId);
+            var user = await _unitOfWork.UserProfileRepository.GetById(request.UserId);
             if (user == null)
                 throw new Exception($"User with ID {request.UserId} not found");
 

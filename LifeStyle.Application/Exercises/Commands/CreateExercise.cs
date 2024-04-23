@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Enums;
 using LifeStyle.Domain.Models.Exercises;
@@ -11,32 +12,46 @@ namespace LifeStyle.Application.Commands
 
     public class CreateExerciseHandler : IRequestHandler<CreateExercise, ExerciseDto>
     {
-        private readonly IRepository<Exercise> _exerciseRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
 
-        public CreateExerciseHandler(IRepository<Exercise> exerciseRepository)
+        public CreateExerciseHandler(IUnitOfWork unitOfWork)
         {
-            _exerciseRepository = exerciseRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ExerciseDto> Handle(CreateExercise request, CancellationToken cancellationToken)
         {
+            try
+            {
+                var existingExercise = await _unitOfWork.ExerciseRepository.GetByName(request.Name);
+                if (existingExercise != null)
+                {
+                    throw new Exception("Exercise already exists");
+                }
 
-            var exercise = new Exercise
-            (
-               exerciseId: GetNextId(),
-               name: request.Name,
-               durationInMinutes: request.DurationInMinutes,
-               type: request.Type
-            );
+                var newExercise = new Exercise
+                {
+                    Name = request.Name,
+                    DurationInMinutes = request.DurationInMinutes,
+                    Type = request.Type
+                };
 
-            await _exerciseRepository.Add(exercise);
-            return ExerciseDto.FromExercise(exercise);
-        }
-        private int GetNextId()
-        {
-            var lastId = _exerciseRepository.GetLastId();
-            return lastId + 1; 
+                await _unitOfWork.BeginTransactionAsync();
+
+                await _unitOfWork.ExerciseRepository.Add(newExercise);
+                await _unitOfWork.SaveAsync();
+
+                await _unitOfWork.CommitTransactionAsync();
+
+                
+                return ExerciseDto.FromExercise(newExercise);
+            }
+            catch (Exception ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new Exception("Failed to create exercise", ex);
+            }
         }
     }
 }

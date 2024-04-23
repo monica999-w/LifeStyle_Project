@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LifeStyle.Infrastructure.Migrations
 {
     [DbContext(typeof(LifeStyleContext))]
-    [Migration("20240417135545_Inital")]
+    [Migration("20240417143237_Inital")]
     partial class Inital
     {
         /// <inheritdoc />

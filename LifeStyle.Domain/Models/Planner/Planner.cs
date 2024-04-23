@@ -1,6 +1,6 @@
 ﻿using LifeStyle.Domain.Models.Exercises;
-using LifeStyle.Domain.Models.Users;
 using LifeStyle.Domain.Models.Meal;
+using LifeStyle.Domain.Models.Users;
 using System.ComponentModel.DataAnnotations;
 
 namespace LifeStyle.Models.Planner
@@ -9,7 +9,7 @@ namespace LifeStyle.Models.Planner
     {
         [Key]
         public int PlannerId { get; set; }
-        public UserProfile Profile { get; set; } = new UserProfile();
+        public UserProfile? Profile { get; set; } 
         public ICollection<Meal>? Meals { get; set; }
         public ICollection<Exercise>? Exercises { get; set; }
 

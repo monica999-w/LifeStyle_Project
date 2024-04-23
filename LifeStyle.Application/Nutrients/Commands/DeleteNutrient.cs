@@ -4,34 +4,34 @@ using MediatR;
 
 namespace LifeStyle.Application.Commands
 {
-    public record DeleteMeal(int MealId) : IRequest<Unit>;
+    public record DeleteNutrient(int NutrientId) : IRequest<Unit>;
 
-    public class DeleteMealHandler : IRequestHandler<DeleteMeal, Unit>
+    public class DeleteNutrientHandler : IRequestHandler<DeleteNutrient, Unit>
     {
 
         private readonly IUnitOfWork _unitOfWork;
 
 
-        public DeleteMealHandler(IUnitOfWork unitOfWork)
+        public DeleteNutrientHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
         }
 
-        public async Task<Unit> Handle(DeleteMeal request, CancellationToken cancellationToken)
+        public async Task<Unit> Handle(DeleteNutrient request, CancellationToken cancellationToken)
         {
 
             try
             {
-                var meal = await _unitOfWork.MealRepository.GetById(request.MealId);
+                var nutrient = await _unitOfWork.NutrientRepository.GetById(request.NutrientId);
 
-                if (meal == null)
+                if (nutrient == null)
                 {
-                    throw new Exception("Meal not found");
+                    throw new Exception("Nutrient not found");
                 }
 
                 await _unitOfWork.BeginTransactionAsync();
 
-                await _unitOfWork.MealRepository.Remove(meal);
+                await _unitOfWork.NutrientRepository.Remove(nutrient);
 
                 await _unitOfWork.SaveAsync();
 
@@ -43,8 +43,9 @@ namespace LifeStyle.Application.Commands
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Failed to delete meal", ex);
+                throw new Exception("Failed to delete nutrient", ex);
             }
         }
     }
+
 }

@@ -2,52 +2,54 @@
 using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Domain;
 using LifeStyle.Domain.Models.Meal;
-
-
-
+using LifeStyle.Infrastructure.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace LifeStyle.Aplication.Logic
 {
     public class MealRepository : IRepository<Meal>
     {
 
-        private readonly List<Meal> _meals = new List<Meal>();
+        private readonly LifeStyleContext _lifeStyleContext;
 
-        public MealRepository()
+        public MealRepository(LifeStyleContext lifeStyleContext)
         {
 
-            _meals.Add(new Meal(1, "Oatmeal", MealType.Breakfast, new Nutrients(1,144.0, 5.0, 30.0, 2.5)));
-            _meals.Add(new Meal(2, "Chicken Salad", MealType.Lunch, new Nutrients(2,255.1, 25.0, 10.0, 15.0)));
+            _lifeStyleContext = lifeStyleContext;
 
         }
 
         public async Task<IEnumerable<Meal>> GetAll()
         {
-            await Task.Delay(0);
-            return _meals;
+
+            return await _lifeStyleContext.Meals
+                  .Include(meal => meal.Nutrients)
+                  .ToListAsync();
         }
 
-        public async Task Add(Meal entity)
+        public async Task<Meal> Add(Meal entity)
         {
-            await Task.Delay(0);
-            _meals.Add(entity);
+            _lifeStyleContext.Meals.Add(entity);
+            await _lifeStyleContext.SaveChangesAsync();
+            return entity;
         }
 
-        public async Task Remove(Meal entity)
+        public async Task<Meal> Remove(Meal entity)
         {
-            await Task.Delay(0);
+
             var existingMeal = await GetById(entity.MealId);
             if (existingMeal != null)
             {
-                _meals.Remove(existingMeal);
+                _lifeStyleContext.Meals.Remove(existingMeal);
             }
             else
             {
-                throw new KeyNotFoundException("Meal not found");
+                throw new Exception("Meal not found");
             }
+            return entity;
         }
 
-        public async Task Update(Meal entity)
+        public async Task<Meal> Update(Meal entity)
         {
             var existingMeal = await GetById(entity.MealId);
             if (existingMeal != null)
@@ -56,34 +58,43 @@ namespace LifeStyle.Aplication.Logic
                 existingMeal.Name = entity.Name;
                 existingMeal.MealType = entity.MealType;
                 existingMeal.Nutrients = entity.Nutrients;
+               
             }
             else
             {
-                throw new KeyNotFoundException("Meal not found");
+                throw new Exception("Meal not found");
             }
+            return entity;
         }
 
         public async Task<Meal?> GetById(int id)
         {
-            await Task.Delay(0);
-            var meal = _meals.FirstOrDefault(m => m.MealId == id);
-            if (meal == null)
-            {
-                throw new KeyNotFoundException("Meal not found");
-            }
+          
+            var meal = await _lifeStyleContext.Meals
+                .Include(m => m.Nutrients)
+                .FirstOrDefaultAsync(e => e.MealId == id);
+
             return meal;
         }
 
         public int GetLastId()
         {
-            if (_meals.Any())
+            if (_lifeStyleContext.Meals.Any())
             {
-                return _meals.Max(m => m.MealId);
+                return _lifeStyleContext.Meals.Max(m => m.MealId);
             }
             else
             {
                 return 0;
             }
+        }
+
+        public async Task<Meal> GetByName(string name)
+        {
+            var meal = await _lifeStyleContext.Meals
+                .FirstOrDefaultAsync(e => e.Name == name);
+
+            return meal;
         }
     }
 }

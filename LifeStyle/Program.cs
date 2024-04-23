@@ -1,18 +1,27 @@
 using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Aplication.Logic;
+using LifeStyle.Application.Abstractions;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Domain.Models.Users;
+using LifeStyle.Infrastructure.Context;
+using LifeStyle.Infrastructure.Repository;
+using LifeStyle.Infrastructure.UnitOfWork;
+using Microsoft.EntityFrameworkCore;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddSingleton<IRepository<Exercise>, ExerciseRepository>();
-builder.Services.AddSingleton<IRepository<Meal>, MealRepository>();
-builder.Services.AddSingleton<IRepository<UserProfile>, UserRepository>();
-builder.Services.AddSingleton<IPlannerRepository, PlannerRepository>();
-
+builder.Services.AddScoped<IRepository<Exercise>, ExerciseRepository>();
+builder.Services.AddScoped<IRepository<Nutrients>, NutrientRepository>();
+builder.Services.AddScoped<IRepository<Meal>, MealRepository>();
+builder.Services.AddScoped<IRepository<UserProfile>, UserRepository>();
+builder.Services.AddScoped<IPlannerRepository, PlannerRepository>();
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IPlannerRepository).Assembly));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddDbContext<LifeStyleContext>(
+    options => options.UseSqlServer(@"Server = (localdb)\projectmodels; Database = LifeStyle;Trusted_Connection=True;"));
+
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

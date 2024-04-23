@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
@@ -13,16 +14,16 @@ namespace LifeStyle.Application.Users.Query
     public record GetAllUsers : IRequest<List<UserDto>>;
     public class GetAllUsersHandler : IRequestHandler<GetAllUsers, List<UserDto>>
     {
-        private readonly IRepository<UserProfile> _userRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetAllUsersHandler(IRepository<UserProfile> userRepository)
+        public GetAllUsersHandler(IUnitOfWork unitOfWork)
         {
-            _userRepository = userRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<UserDto>> Handle(GetAllUsers request, CancellationToken cancellationToken)
         {
-            var users = await _userRepository.GetAll(); 
+            var users = await _unitOfWork.UserProfileRepository.GetAll(); 
             return users.Select(UserDto.FromUser).ToList();
         }
     }

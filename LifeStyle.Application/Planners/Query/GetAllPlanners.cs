@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Planners.Responses;
 using MediatR;
 using System;
@@ -12,16 +13,16 @@ namespace LifeStyle.Application.Planners.Query
     public record GetAllPlanners : IRequest<List<PlannerDto>>;
     public class GetAllPlannersHandler : IRequestHandler<GetAllPlanners, List<PlannerDto>>
     {
-        private readonly IPlannerRepository _plannerRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetAllPlannersHandler(IPlannerRepository plannerRepository)
+        public GetAllPlannersHandler( IUnitOfWork unitOfWork)
         {
-            _plannerRepository = plannerRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<PlannerDto>> Handle(GetAllPlanners request, CancellationToken cancellationToken)
         {
-            var planners = await _plannerRepository.GetAll();
+            var planners = await _unitOfWork.PlannerRepository.GetAll();
             return planners.Select(planner => PlannerDto.FromPlanner(planner)).ToList();
         }
     }

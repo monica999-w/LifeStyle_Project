@@ -10,7 +10,7 @@ namespace LifeStyle.Domain.Models.Exercises
         [Key]
         public int ExerciseId { get; set; }
         [MaxLength(50)]
-        public string Name { get; set; } = string.Empty;
+        public string? Name { get; set; } 
         public int DurationInMinutes { get; set; }
         public ExerciseType Type { get; set; }
       

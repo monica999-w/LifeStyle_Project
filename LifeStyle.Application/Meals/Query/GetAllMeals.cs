@@ -1,12 +1,7 @@
-﻿using LifeStyle.Aplication.Interfaces;
+﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
-using LifeStyle.Domain.Models.Meal;
+
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LifeStyle.Application.Meals.Query
 {
@@ -15,16 +10,16 @@ namespace LifeStyle.Application.Meals.Query
 
     public class GetAllMealsHandler : IRequestHandler<GetAllMeals, List<MealDto>>
     {
-        private readonly IRepository<Meal> _mealRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public GetAllMealsHandler(IRepository<Meal> mealRepository)
+        public GetAllMealsHandler(IUnitOfWork unitOfWork)
         {
-            _mealRepository = mealRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<List<MealDto>> Handle(GetAllMeals request, CancellationToken cancellationToken)
         {
-            var meals = await _mealRepository.GetAll();
+            var meals = await _unitOfWork.MealRepository.GetAll(); 
             return meals.Select(MealDto.FromMeal).ToList();
         }
     }
