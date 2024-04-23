@@ -9,7 +9,9 @@ namespace LifeStyle.Domain.Models.Exercises
     {
         [Key]
         public int ExerciseId { get; set; }
-        [MaxLength(50)]
+
+        [Required(ErrorMessage = "Name is required")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Name length must be between 3 and 50 characters")]
         public string? Name { get; set; } 
         public int DurationInMinutes { get; set; }
         public ExerciseType Type { get; set; }

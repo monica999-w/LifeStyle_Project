@@ -19,7 +19,7 @@ namespace LifeStyle.nUnitTests
           
             var mockPlannerRepository = new Mock<IPlannerRepository>();
             mockPlannerRepository.Setup(repo => repo.AddPlanner(planner))
-                                 .Returns(Task.CompletedTask);
+                                 .Returns((Task<Planner>)Task.CompletedTask);
 
             // Act
             await mockPlannerRepository.Object.AddPlanner(planner);
@@ -44,7 +44,7 @@ namespace LifeStyle.nUnitTests
 
             var mockPlannerRepository = new Mock<IPlannerRepository>();
             mockPlannerRepository.Setup(repo => repo.RemovePlanner(plannerToRemove))
-                                 .Returns(Task.CompletedTask);
+                                 .Returns((Task<Planner>)Task.CompletedTask);
 
             // Act
             await mockPlannerRepository.Object.RemovePlanner(plannerToRemove);

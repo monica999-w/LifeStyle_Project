@@ -7,10 +7,18 @@ namespace LifeStyle.Domain.Models.Users
     {
         [Key]
         public int ProfileId { get; set; }
-        public string? Email { get; set; } 
-        public string? PhoneNumber { get; set; } 
+        [EmailAddress(ErrorMessage = "Invalid email address")]
+        public string? Email { get; set; }
+
+        [Phone(ErrorMessage = "Invalid phone number")]
+        public string? PhoneNumber { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "Height must be a positive number")]
         public double Height { get; set; }
+
+        [Range(0, double.MaxValue, ErrorMessage = "Weight must be a positive number")]
         public double Weight { get; set; }
+
 
         public UserProfile()
         {

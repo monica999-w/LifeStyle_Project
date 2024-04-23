@@ -7,7 +7,9 @@ namespace LifeStyle.Domain.Models.Meal
     {
         [Key]
         public int MealId { get; set; }
-        [MaxLength(50)]
+
+        [Required(ErrorMessage = "Name is required")]
+        [StringLength(50, MinimumLength = 3, ErrorMessage = "Name length must be between 3 and 50 characters")]
         public string? Name { get; set; } 
         public MealType MealType { get; set; }
         public Nutrients? Nutrients { get; set; } 
