@@ -3,6 +3,16 @@
     public enum ExerciseType
     {
         Yoga,
-        Cardio
+        Cardio,
+        Weightlifting,
+        Pilates,
+        CrossFit,
+        Zumba,
+        Hiking,
+        Swimming,
+        Cycling,
+        Running,
+        Aerobics,
+        BodyweightExercises
     }
 }

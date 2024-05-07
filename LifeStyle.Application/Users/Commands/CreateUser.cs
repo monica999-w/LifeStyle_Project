@@ -1,6 +1,7 @@
 ﻿using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
+using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
@@ -25,8 +26,10 @@ namespace LifeStyle.Application.Commands
                 var existingUser = await _unitOfWork.UserProfileRepository.GetByName(request.Email);
                 if (existingUser != null)
                 {
-                    throw new Exception("User already exists");
+                    throw new AlreadyExistsException("User already exists");
                 }
+                
+                await _unitOfWork.BeginTransactionAsync();
 
                 var newUser = new UserProfile
                 {
@@ -37,8 +40,6 @@ namespace LifeStyle.Application.Commands
 
                 };
 
-                await _unitOfWork.BeginTransactionAsync();
-
                 await _unitOfWork.UserProfileRepository.Add(newUser);
                 await _unitOfWork.SaveAsync();
 
@@ -47,10 +48,14 @@ namespace LifeStyle.Application.Commands
 
                 return UserDto.FromUser(newUser);
             }
+            catch(AlreadyExistsException ex)
+            {
+                throw ex;
+            }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Failed to create user", ex);
+                throw new DataValidationException("Failed to create user", ex);
             }
         }
     }

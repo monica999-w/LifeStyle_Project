@@ -9,7 +9,7 @@ namespace LifeStyle.Application.Responses
         public int Id { get; set; }
         public string? Name { get; set; }
         public int DurationInMinutes { get; set; }
-        public ExerciseType Type { get; set; }
+        public  ExerciseType Type { get; set; }
 
         public static ExerciseDto FromExercise(Exercise exercise)
         {

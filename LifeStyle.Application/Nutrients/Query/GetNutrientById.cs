@@ -1,5 +1,6 @@
 ﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
+using LifeStyle.Domain.Exception;
 using MediatR;
 
 
@@ -17,11 +18,18 @@ namespace LifeStyle.Application.Query
 
         public async Task<NutrientDto> Handle(GetNutrientById request, CancellationToken cancellationToken)
         {
-            var nutrient = await _unitOfWork.NutrientRepository.GetById(request.NutrientId);
-            if (nutrient == null)
-                throw new Exception($"Nutrient with ID {request.NutrientId} not found");
+            try
+            {
+                var nutrient = await _unitOfWork.NutrientRepository.GetById(request.NutrientId);
+                if (nutrient == null)
+                    throw new NotFoundException($"Nutrient with ID {request.NutrientId} not found");
 
-            return NutrientDto.FromNutrient(nutrient);
+                return NutrientDto.FromNutrient(nutrient);
+            }
+            catch (NotFoundException ex)
+            {
+                throw;
+            }
         }
     }
 }

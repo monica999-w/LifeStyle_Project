@@ -2,6 +2,7 @@
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Planners.Responses;
 using LifeStyle.Application.Responses;
+using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Domain.Models.Users;
@@ -28,30 +29,33 @@ namespace LifeStyle.Application.Planners.Commands
             {
                 var user = await _unitOfWork.UserProfileRepository.GetById(request.UserId);
                 if (user == null)
-                    throw new Exception($"User with ID {request.UserId} not found");
-
+                {
+                    throw new NotFoundException($"User with ID {request.UserId} not found");
+                }
 
                 var meals = new List<Meal>();
                 foreach (var mealId in request.MealIds)
                 {
                     var meal = await _unitOfWork.MealRepository.GetById(mealId);
                     if (meal == null)
-                        throw new Exception($"Meal with ID {mealId} not found");
-
+                    {
+                        throw new NotFoundException($"Meal with ID {mealId} not found");
+                    }
                     meals.Add(meal);
                 }
-
 
                 var exercises = new List<Exercise>();
                 foreach (var exerciseId in request.ExerciseIds)
                 {
                     var exercise = await _unitOfWork.ExerciseRepository.GetById(exerciseId);
                     if (exercise == null)
-                        throw new Exception($"Exercise with ID {exerciseId} not found");
-
+                    {
+                        throw new NotFoundException($"Exercise with ID {exerciseId} not found");
+                    }
                     exercises.Add(exercise);
                 }
-
+                
+                await _unitOfWork.BeginTransactionAsync();
 
                 var planner = new Planner(user);
 
@@ -65,11 +69,9 @@ namespace LifeStyle.Application.Planners.Commands
                     planner.AddExercise(exercise);
                 }
 
-                await _unitOfWork.BeginTransactionAsync();
-
+                
                 await _unitOfWork.PlannerRepository.AddPlanner(planner);
                 await _unitOfWork.SaveAsync();
-
                 await _unitOfWork.CommitTransactionAsync();
 
                 return new PlannerDto
@@ -79,13 +81,16 @@ namespace LifeStyle.Application.Planners.Commands
                     Exercises = planner.Exercises?.Select(ExerciseDto.FromExercise).ToList()
                 };
             }
-            catch(Exception ex)
+            catch (NotFoundException ex)
+            {
+               throw ex;
+            }
+            catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Failed to create planner", ex);
+                throw new DataValidationException("Failed to create planner", ex);
             }
         }
-
     }
 }
 

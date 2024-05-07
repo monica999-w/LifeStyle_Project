@@ -1,5 +1,6 @@
 ﻿
 
+using LifeStyle.Domain.Enums;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Domain.Models.Users;
@@ -25,6 +26,8 @@ namespace LifeStyle.Infrastructure.Context
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
            modelBuilder.ApplyConfiguration(new PlannerEntityTypeConfiguration());
+           modelBuilder.ApplyConfiguration(new ExerciseEntityTypeConfiguration());
+
 
         }
     }

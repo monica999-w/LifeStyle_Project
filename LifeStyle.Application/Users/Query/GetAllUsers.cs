@@ -1,6 +1,7 @@
 ﻿using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
+using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
 using System;
@@ -23,8 +24,15 @@ namespace LifeStyle.Application.Users.Query
 
         public async Task<List<UserDto>> Handle(GetAllUsers request, CancellationToken cancellationToken)
         {
-            var users = await _unitOfWork.UserProfileRepository.GetAll(); 
-            return users.Select(UserDto.FromUser).ToList();
+            try
+            {
+                var users = await _unitOfWork.UserProfileRepository.GetAll();
+                return users.Select(UserDto.FromUser).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new DataValidationException("Failed to retrieve all nutrients", ex);
+            }
         }
     }
 

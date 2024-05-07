@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Application.Abstractions;
+using LifeStyle.Domain.Exception;
 using MediatR;
 
 
@@ -19,14 +20,13 @@ namespace LifeStyle.Application.Commands
 
         public async Task<Unit> Handle(DeleteMeal request, CancellationToken cancellationToken)
         {
-
             try
             {
                 var meal = await _unitOfWork.MealRepository.GetById(request.MealId);
 
                 if (meal == null)
                 {
-                    throw new Exception("Meal not found");
+                    throw new NotFoundException($"Meal with ID {request.MealId} not found");
                 }
 
                 await _unitOfWork.BeginTransactionAsync();
@@ -39,11 +39,15 @@ namespace LifeStyle.Application.Commands
 
                 return Unit.Value;
             }
-
+            catch (NotFoundException ex)
+            {
+               
+                throw new NotFoundException("Failed to delete meal: " + ex.Message);
+            }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Failed to delete meal", ex);
+                throw new DataValidationException("Failed to delete meal", ex);
             }
         }
     }

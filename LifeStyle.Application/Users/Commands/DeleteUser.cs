@@ -1,5 +1,6 @@
 ﻿using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Application.Abstractions;
+using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
@@ -30,7 +31,7 @@ namespace LifeStyle.Application.Users.Commands
 
                 if (user == null)
                 {
-                    throw new Exception("User not found");
+                    throw new NotFoundException("User not found");
                 }
 
                 await _unitOfWork.BeginTransactionAsync();
@@ -43,11 +44,15 @@ namespace LifeStyle.Application.Users.Commands
 
                 return Unit.Value;
             }
+            catch(NotFoundException ex)
+            {
+                throw ex;
+            }
 
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Failed to delete user", ex);
+                throw new DataValidationException("Failed to delete user", ex);
             }
         }
     }

@@ -2,6 +2,7 @@
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Enums;
+using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Meal;
 using MediatR;
 
@@ -22,37 +23,35 @@ namespace LifeStyle.Application.Commands
 
         public async Task<MealDto> Handle(UpdateMeal request, CancellationToken cancellationToken)
         {
-
             try
             {
                 var meal = await _unitOfWork.MealRepository.GetById(request.MealId);
                 if (meal == null)
                 {
-                    throw new Exception($"Meal with ID {request.MealId} not found");
+                    throw new NotFoundException($"Meal with ID {request.MealId} not found");
                 }
 
-                meal.Name=request.Name;
-                meal.MealType=request.MealType;
-                meal.Nutrients=request.Nutrients;
-
-
+                meal.Name = request.Name;
+                meal.MealType = request.MealType;
+                meal.Nutrients = request.Nutrients;
 
                 await _unitOfWork.BeginTransactionAsync();
-
                 await _unitOfWork.MealRepository.Update(meal);
-
                 await _unitOfWork.SaveAsync();
-
                 await _unitOfWork.CommitTransactionAsync();
 
                 return MealDto.FromMeal(meal);
             }
+            catch (NotFoundException ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw new NotFoundException("Failed to update meal: " + ex.Message);
+            }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Fail update meal", ex);
+                throw new DataValidationException("Failed to update meal", ex);
             }
-
         }
     }
 }

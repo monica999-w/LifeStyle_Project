@@ -3,13 +3,12 @@ using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
+using LifeStyle.Domain.Exception;
 
 namespace LifeStyle.Aplication.Logic
 {
-
     public class ExerciseRepository : IRepository<Exercise>
     {
-
         private readonly LifeStyleContext _lifeStyleContext;
 
         public ExerciseRepository(LifeStyleContext lifeStyleContext)
@@ -19,77 +18,115 @@ namespace LifeStyle.Aplication.Logic
 
         public async Task<IEnumerable<Exercise>> GetAll()
         {
-           
-            return await _lifeStyleContext.Exercises
-                .ToListAsync();
+            try
+            {
+                return await _lifeStyleContext.Exercises.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new DataValidationException("An error occurred while retrieving exercises.", ex);
+            }
         }
 
         public async Task<Exercise> Add(Exercise entity)
         {
-            _lifeStyleContext.Exercises.Add(entity);
-            await _lifeStyleContext.SaveChangesAsync();
-            return entity;
+            try
+            {
+                _lifeStyleContext.Exercises.Add(entity);
+                await _lifeStyleContext.SaveChangesAsync();
+                return entity;
+            }
+            catch (DbUpdateException ex)
+            {
+                throw new AlreadyExistsException("Exercise with the same name already exists.", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new DataValidationException("An error occurred while adding the exercise.", ex);
+            }
         }
 
         public async Task<Exercise> Remove(Exercise entity)
         {
-          
-            var existingExercise = await GetById(entity.ExerciseId);
-            if (existingExercise != null)
+            try
             {
-                _lifeStyleContext.Exercises.Remove(existingExercise);
+                var existingExercise = await GetById(entity.ExerciseId);
+                if (existingExercise != null)
+                {
+                    _lifeStyleContext.Exercises.Remove(existingExercise);
+                    await _lifeStyleContext.SaveChangesAsync();
+                }
+                else
+                {
+                    throw new NotFoundException("Exercise not found");
+                }
+                return entity;
             }
-            else
+            catch (Exception ex)
             {
-                throw new Exception("Exercise not found");
+                throw new DataValidationException("An error occurred while removing the exercise.", ex);
             }
-            return entity;
         }
 
         public async Task<Exercise> Update(Exercise entity)
         {
-            var existingExercise = await GetById(entity.ExerciseId);
-            if (existingExercise != null)
+            try
             {
-
-                existingExercise.Name = entity.Name;
-                existingExercise.DurationInMinutes = entity.DurationInMinutes;
-                existingExercise.Type = entity.Type;
+                var existingExercise = await GetById(entity.ExerciseId);
+                if (existingExercise != null)
+                {
+                    existingExercise.Name = entity.Name;
+                    existingExercise.DurationInMinutes = entity.DurationInMinutes;
+                    existingExercise.Type = entity.Type;
+                    await _lifeStyleContext.SaveChangesAsync();
+                }
+                else
+                {
+                    throw new NotFoundException("Exercise not found");
+                }
+                return entity;
             }
-            else
+            catch (Exception ex)
             {
-                throw new Exception("Exercise not found");
+                throw new DataValidationException("An error occurred while updating the exercise.", ex);
             }
-            return entity;
         }
 
         public async Task<Exercise?> GetById(int id)
         {
-          
-            var exercise = await _lifeStyleContext.Exercises
-                .FirstOrDefaultAsync(e => e.ExerciseId == id);
-          
-            return exercise;
+            try
+            {
+                var exercise = await _lifeStyleContext.Exercises.FirstOrDefaultAsync(e => e.ExerciseId == id);
+                return exercise;
+            }
+            catch (Exception ex)
+            {
+                throw new DataValidationException("An error occurred while retrieving the exercise by ID.", ex);
+            }
         }
 
         public async Task<Exercise> GetByName(string name)
         {
-            var exercise = await _lifeStyleContext.Exercises
-                .FirstOrDefaultAsync(e => e.Name == name);
-
-            return exercise;
+            try
+            {
+                var exercise = await _lifeStyleContext.Exercises.FirstOrDefaultAsync(e => e.Name == name);
+                return exercise;
+            }
+            catch (Exception ex)
+            {
+                throw new DataValidationException("An error occurred while retrieving the exercise by name.", ex);
+            }
         }
-
 
         public int GetLastId()
         {
-            if (_lifeStyleContext.Exercises.Any())
+            try
             {
-                return _lifeStyleContext.Exercises.Max(m => m.ExerciseId);
+                return _lifeStyleContext.Exercises.Any() ? _lifeStyleContext.Exercises.Max(m => m.ExerciseId) : 0;
             }
-            else
+            catch (Exception ex)
             {
-                return 0;
+                throw new DataValidationException("An error occurred while retrieving the last exercise ID.", ex);
             }
         }
     }

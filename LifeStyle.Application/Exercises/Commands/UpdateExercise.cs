@@ -2,6 +2,7 @@
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Enums;
+using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Exercises;
 using MediatR;
 
@@ -28,7 +29,7 @@ namespace LifeStyle.Application.Commands
                 var exercise = await _unitOfWork.ExerciseRepository.GetById(request.ExerciseId);
                 if (exercise == null)
                 {
-                    throw new Exception($"Exercise with ID {request.ExerciseId} not found");
+                    throw new NotFoundException($"Exercise with ID {request.ExerciseId} not found");
                 }
 
                 exercise.Name = request.Name;
@@ -45,10 +46,15 @@ namespace LifeStyle.Application.Commands
 
                 return ExerciseDto.FromExercise(exercise);
             }
+            catch (NotFoundException ex)
+            {
+                
+                throw ;
+            }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Fail update exercise", ex);
+                throw new DataValidationException("Fail update exercise", ex);
             }
             
         }

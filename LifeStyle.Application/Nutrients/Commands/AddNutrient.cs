@@ -1,5 +1,6 @@
 ﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
+using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Meal;
 using MediatR;
 
@@ -45,7 +46,7 @@ namespace LifeStyle.Application.Commands
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Failed to create nutrient", ex);
+                throw new DataValidationException("Failed to create nutrient", ex);
             }
 
         }

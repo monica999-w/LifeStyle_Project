@@ -1,5 +1,6 @@
 ﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
+using LifeStyle.Domain.Exception;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -21,8 +22,15 @@ namespace LifeStyle.Application.Query
 
         public async Task<List<NutrientDto>> Handle(GetAllNutrient request, CancellationToken cancellationToken)
         {
-            var exercise = await _unitOfWork.NutrientRepository.GetAll();
-            return exercise.Select(NutrientDto.FromNutrient).ToList();
+            try
+            {
+                var exercise = await _unitOfWork.NutrientRepository.GetAll();
+                return exercise.Select(NutrientDto.FromNutrient).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new DataValidationException("Failed to retrieve all nutrients", ex);
+            }
         }
     }
 

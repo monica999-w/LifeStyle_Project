@@ -1,5 +1,6 @@
 ﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
+using LifeStyle.Domain.Exception;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -29,7 +30,7 @@ namespace LifeStyle.Application.Commands
                 var nutrient = await _unitOfWork.NutrientRepository.GetById(request.NutrientId);
                 if (nutrient == null)
                 {
-                    throw new Exception($"Nutrient with ID {request.NutrientId} not found");
+                    throw new NotFoundException($"Nutrient with ID {request.NutrientId} not found");
                 }
 
                 nutrient.Protein=request.Protein;
@@ -47,6 +48,10 @@ namespace LifeStyle.Application.Commands
                 await _unitOfWork.CommitTransactionAsync();
 
                 return NutrientDto.FromNutrient(nutrient);
+            }
+            catch(NotFoundException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {

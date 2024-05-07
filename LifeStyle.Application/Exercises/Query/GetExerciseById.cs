@@ -1,5 +1,6 @@
 ﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
+using LifeStyle.Domain.Exception;
 using MediatR;
 
 
@@ -17,11 +18,18 @@ namespace LifeStyle.Application.Query
 
         public async Task<ExerciseDto> Handle(GetExerciseById request, CancellationToken cancellationToken)
         {
-            var exercise = await _unitOfWork.ExerciseRepository.GetById(request.ExerciseId);
-            if (exercise == null)
-                throw new Exception($"Exercise with ID {request.ExerciseId} not found");
+            try
+            {
+                var exercise = await _unitOfWork.ExerciseRepository.GetById(request.ExerciseId);
+                if (exercise == null)
+                    throw new NotFoundException($"Exercise with ID {request.ExerciseId} not found");
 
-            return ExerciseDto.FromExercise(exercise);
+                return ExerciseDto.FromExercise(exercise);
+            }
+            catch (NotFoundException ex)
+            {
+                throw;
+            }
         }
     }
 }

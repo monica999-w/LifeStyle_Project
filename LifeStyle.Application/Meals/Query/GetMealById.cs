@@ -1,6 +1,6 @@
 ﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
-
+using LifeStyle.Domain.Exception;
 using MediatR;
 
 
@@ -19,11 +19,17 @@ namespace LifeStyle.Application.Meals.Query
 
         public async Task<MealDto> Handle(GetMealById request, CancellationToken cancellationToken)
         {
-            var meal = await _unitOfWork.MealRepository.GetById(request.MealId);
-            if (meal == null)
-                throw new Exception($"Meal with ID {request.MealId} not found");
+            try
+            {
+                var meal = await _unitOfWork.MealRepository.GetById(request.MealId);
+                if (meal == null)
+                    throw new NotFoundException($"Meal with ID {request.MealId} not found");
 
-            return MealDto.FromMeal(meal);
+                return MealDto.FromMeal(meal);
+            }catch(NotFoundException) 
+            {
+                throw;
+            }
         }
     }
 

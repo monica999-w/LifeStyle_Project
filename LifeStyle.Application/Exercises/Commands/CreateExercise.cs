@@ -2,6 +2,7 @@
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Enums;
+using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Exercises;
 using MediatR;
 
@@ -27,9 +28,9 @@ namespace LifeStyle.Application.Commands
                 var existingExercise = await _unitOfWork.ExerciseRepository.GetByName(request.Name);
                 if (existingExercise != null)
                 {
-                    throw new Exception("Exercise already exists");
+                    throw new AlreadyExistsException("Exercise already exists");
                 }
-
+                await _unitOfWork.BeginTransactionAsync();
                 var newExercise = new Exercise
                 {
                     Name = request.Name,
@@ -37,7 +38,7 @@ namespace LifeStyle.Application.Commands
                     Type = request.Type
                 };
 
-                await _unitOfWork.BeginTransactionAsync();
+               
 
                 await _unitOfWork.ExerciseRepository.Add(newExercise);
                 await _unitOfWork.SaveAsync();
@@ -47,11 +48,16 @@ namespace LifeStyle.Application.Commands
                 
                 return ExerciseDto.FromExercise(newExercise);
             }
+            catch (AlreadyExistsException ex)
+            {
+                throw ex;
+            }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Failed to create exercise", ex);
+                throw new DataValidationException("Failed to create exercise", ex);
             }
+           
         }
     }
 }

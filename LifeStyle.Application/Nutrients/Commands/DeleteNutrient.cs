@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Application.Abstractions;
+using LifeStyle.Domain.Exception;
 using MediatR;
 
 
@@ -26,7 +27,7 @@ namespace LifeStyle.Application.Commands
 
                 if (nutrient == null)
                 {
-                    throw new Exception("Nutrient not found");
+                    throw new NotFoundException("Nutrient not found");
                 }
 
                 await _unitOfWork.BeginTransactionAsync();
@@ -38,6 +39,10 @@ namespace LifeStyle.Application.Commands
                 await _unitOfWork.CommitTransactionAsync();
 
                 return Unit.Value;
+            }
+            catch (NotFoundException ex)
+            {
+                throw ex;
             }
 
             catch (Exception ex)

@@ -1,5 +1,6 @@
 ﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Planners.Responses;
+using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
 
@@ -17,11 +18,18 @@ namespace LifeStyle.Application.Planners.Query
 
         public async Task<List<PlannerDto>> Handle(GetPlannersByUser request, CancellationToken cancellationToken)
         {
-            var planner = await _unitOfWork.PlannerRepository.GetPlannerByUser(request.UserProfile);
-            if (planner == null)
-                return new List<PlannerDto>();
+            try
+            {
+                var planner = await _unitOfWork.PlannerRepository.GetPlannerByUser(request.UserProfile);
+                if (planner == null)
+                    return new List<PlannerDto>();
 
-            return new List<PlannerDto> { PlannerDto.FromPlanner(planner) };
+                return new List<PlannerDto> { PlannerDto.FromPlanner(planner) };
+            }
+            catch (NotFoundException ex)
+            {
+                throw;
+            }
         }
     }
 

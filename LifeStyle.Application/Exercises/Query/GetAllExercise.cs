@@ -1,6 +1,7 @@
 ﻿using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
+using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
@@ -24,8 +25,15 @@ namespace LifeStyle.Application.Exercises.Query
 
         public async Task<List<ExerciseDto>> Handle(GetAllExercise request, CancellationToken cancellationToken)
         {
-            var exercise = await _unitOfWork.ExerciseRepository.GetAll(); 
-            return exercise.Select(ExerciseDto.FromExercise).ToList();
+            try
+            {
+                var exercises = await _unitOfWork.ExerciseRepository.GetAll();
+                return exercises.Select(ExerciseDto.FromExercise).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new DataValidationException("Failed to retrieve all exercises", ex);
+            }
         }
     }
 

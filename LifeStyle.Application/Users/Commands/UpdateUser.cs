@@ -1,5 +1,6 @@
 ﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
+using LifeStyle.Domain.Exception;
 using MediatR;
 
 
@@ -26,7 +27,7 @@ namespace LifeStyle.Application.Users.Commands
                 var user = await _unitOfWork.UserProfileRepository.GetById(request.UserId);
                 if (user == null)
                 {
-                    throw new KeyNotFoundException($"User with ID {request.UserId} not found");
+                    throw new NotFoundException($"User with ID {request.UserId} not found");
                 }
 
                 user.Email = request.Email;
@@ -44,11 +45,15 @@ namespace LifeStyle.Application.Users.Commands
 
                 return UserDto.FromUser(user);
             }
+            catch(NotFoundException ex)
+            {
+                throw ex;
+            }
 
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Fail update user", ex);
+                throw new DataValidationException("Fail update user", ex);
             }
         }
     }

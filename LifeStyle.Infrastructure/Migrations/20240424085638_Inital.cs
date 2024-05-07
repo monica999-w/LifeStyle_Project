@@ -18,7 +18,7 @@ namespace LifeStyle.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     DurationInMinutes = table.Column<int>(type: "int", nullable: false),
-                    Type = table.Column<int>(type: "int", nullable: false)
+                    Type = table.Column<string>(type: "nvarchar(20)", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -47,8 +47,8 @@ namespace LifeStyle.Infrastructure.Migrations
                 {
                     ProfileId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Height = table.Column<double>(type: "float", nullable: false),
                     Weight = table.Column<double>(type: "float", nullable: false)
                 },
@@ -65,7 +65,7 @@ namespace LifeStyle.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     MealType = table.Column<int>(type: "int", nullable: false),
-                    NutrientsNutrientId = table.Column<int>(type: "int", nullable: false)
+                    NutrientsNutrientId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -74,8 +74,7 @@ namespace LifeStyle.Infrastructure.Migrations
                         name: "FK_Meals_Nutrients_NutrientsNutrientId",
                         column: x => x.NutrientsNutrientId,
                         principalTable: "Nutrients",
-                        principalColumn: "NutrientId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "NutrientId");
                 });
 
             migrationBuilder.CreateTable(
@@ -84,7 +83,7 @@ namespace LifeStyle.Infrastructure.Migrations
                 {
                     PlannerId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ProfileId = table.Column<int>(type: "int", nullable: false)
+                    ProfileId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -93,8 +92,7 @@ namespace LifeStyle.Infrastructure.Migrations
                         name: "FK_Planners_UserProfiles_ProfileId",
                         column: x => x.ProfileId,
                         principalTable: "UserProfiles",
-                        principalColumn: "ProfileId",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "ProfileId");
                 });
 
             migrationBuilder.CreateTable(

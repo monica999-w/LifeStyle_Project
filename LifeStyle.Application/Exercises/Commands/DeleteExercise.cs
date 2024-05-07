@@ -1,5 +1,6 @@
 ﻿using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Application.Abstractions;
+using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Exercises;
 using MediatR;
 
@@ -28,7 +29,7 @@ namespace LifeStyle.Application.Commands
 
                 if (exercise == null)
                 {
-                    throw new KeyNotFoundException("Exercise not found");
+                    throw new NotFoundException("Exercise not found");
                 }
 
                 await _unitOfWork.BeginTransactionAsync();
@@ -40,12 +41,17 @@ namespace LifeStyle.Application.Commands
                 await _unitOfWork.CommitTransactionAsync();
 
                 return Unit.Value;
-            } 
+            }
+            catch (NotFoundException ex)
+            {
+               
+                throw new NotFoundException("Exercise not found", ex);
+            }
 
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Failed to delete exercise", ex);
+                throw new DataValidationException("Failed to delete exercise", ex);
             }
         }
     }

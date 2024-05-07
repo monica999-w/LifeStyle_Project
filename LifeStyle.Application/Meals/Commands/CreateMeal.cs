@@ -1,8 +1,12 @@
 ﻿using LifeStyle.Application.Abstractions;
+using LifeStyle.Application.Commands;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Enums;
+using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Meal;
 using MediatR;
+using System.ComponentModel.DataAnnotations;
+using System.Threading;
 
 
 namespace LifeStyle.Application.Commands
@@ -39,28 +43,48 @@ namespace LifeStyle.Application.Commands
                     nutrient= NutrientDto.FromNutrientDto(nutrientDto);
 
                 }
-                    var newMeal = new Meal
-                    {
+
+                if (string.IsNullOrWhiteSpace(request.Name))
+                {
+                    throw new ValidationException("Meal name cannot be empty");
+                }
+                var existingMeal = await _unitOfWork.MealRepository.GetByName(request.Name);
+
+                if (existingMeal != null)
+                {
+                    throw new AlreadyExistsException($"A meal with the name '{request.Name}' already exists");
+                } 
+                await _unitOfWork.BeginTransactionAsync();
+
+                var newMeal = new Meal
+                {
                         Name = request.Name,
                         MealType = request.MealType,
                         Nutrients = nutrient
-                    };
-                
-
-                    await _unitOfWork.BeginTransactionAsync();
-                    await _unitOfWork.MealRepository.Add(newMeal);
-                    await _unitOfWork.SaveAsync();
-                    await _unitOfWork.CommitTransactionAsync();
+                };
+               
+               await _unitOfWork.MealRepository.Add(newMeal);
+               await _unitOfWork.SaveAsync();
+               await _unitOfWork.CommitTransactionAsync();
 
 
-                    return MealDto.FromMeal(newMeal);
-                
+               return MealDto.FromMeal(newMeal);
+            }
+            catch (ValidationException ex)
+            {
+                await _unitOfWork.RollbackTransactionAsync();
+                throw ex;
+            }
+            catch (AlreadyExistsException ex)
+            {
+                throw ex;
             }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Failed to create meal", ex);
+                throw new DataValidationException("Failed to create meal", ex);
             }
         }
     }
 }
+

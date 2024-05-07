@@ -1,6 +1,6 @@
 ﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
-
+using LifeStyle.Domain.Exception;
 using MediatR;
 
 namespace LifeStyle.Application.Meals.Query
@@ -19,8 +19,15 @@ namespace LifeStyle.Application.Meals.Query
 
         public async Task<List<MealDto>> Handle(GetAllMeals request, CancellationToken cancellationToken)
         {
-            var meals = await _unitOfWork.MealRepository.GetAll(); 
-            return meals.Select(MealDto.FromMeal).ToList();
+            try
+            {
+                var meals = await _unitOfWork.MealRepository.GetAll();
+                return meals.Select(MealDto.FromMeal).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new DataValidationException("Failed to retrieve all meals", ex);
+            }
         }
     }
 }

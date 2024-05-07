@@ -1,6 +1,7 @@
 ﻿using LifeStyle.Domain.Enums;
 using LifeStyle.Models.Planner;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace LifeStyle.Domain.Models.Exercises
@@ -14,6 +15,9 @@ namespace LifeStyle.Domain.Models.Exercises
         [StringLength(50, MinimumLength = 3, ErrorMessage = "Name length must be between 3 and 50 characters")]
         public string? Name { get; set; } 
         public int DurationInMinutes { get; set; }
+
+        [EnumDataType(typeof(ExerciseType))]
+        [Column(TypeName = "nvarchar(20)")]
         public ExerciseType Type { get; set; }
       
 

@@ -25,7 +25,6 @@ namespace LifeStyle.Infrastructure.UnitOfWork
         public IRepository<Exercise> ExerciseRepository {  get; private set; }
         public IRepository<Nutrients> NutrientRepository { get; private set; }
 
-
         public IRepository<Meal> MealRepository { get; private set; }
 
         public IRepository<UserProfile> UserProfileRepository { get; private set; }

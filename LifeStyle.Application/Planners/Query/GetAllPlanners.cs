@@ -1,6 +1,7 @@
 ﻿using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Planners.Responses;
+using LifeStyle.Domain.Exception;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -22,8 +23,15 @@ namespace LifeStyle.Application.Planners.Query
 
         public async Task<List<PlannerDto>> Handle(GetAllPlanners request, CancellationToken cancellationToken)
         {
-            var planners = await _unitOfWork.PlannerRepository.GetAll();
-            return planners.Select(planner => PlannerDto.FromPlanner(planner)).ToList();
+            try
+            {
+                var planners = await _unitOfWork.PlannerRepository.GetAll();
+                return planners.Select(planner => PlannerDto.FromPlanner(planner)).ToList();
+            }
+            catch (Exception ex)
+            {
+                throw new DataValidationException("Failed to retrieve all planners", ex);
+            }
         }
     }
 

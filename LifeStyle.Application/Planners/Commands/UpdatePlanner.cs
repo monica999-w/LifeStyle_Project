@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Application.Abstractions;
+using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
 using MediatR;
@@ -19,12 +20,13 @@ namespace LifeStyle.Application.Planners.Commands
 
         public async Task<bool> Handle(UpdatePlanner request, CancellationToken cancellationToken)
         {
-            try {
-
+            try
+            {
                 var user = await _unitOfWork.UserProfileRepository.GetById(request.UserId);
-
                 if (user == null)
-                    throw new Exception($"User with ID {request.UserId} not found");
+                {
+                    throw new NotFoundException($"User with ID {request.UserId} not found");
+                }
 
                 var meals = new List<Meal>();
                 if (request.MealIds != null)
@@ -33,8 +35,9 @@ namespace LifeStyle.Application.Planners.Commands
                     {
                         var meal = await _unitOfWork.MealRepository.GetById(mealId);
                         if (meal == null)
-                            throw new Exception($"Meal with ID {mealId} not found");
-
+                        {
+                            throw new NotFoundException($"Meal with ID {mealId} not found");
+                        }
                         meals.Add(meal);
                     }
                 }
@@ -46,16 +49,18 @@ namespace LifeStyle.Application.Planners.Commands
                     {
                         var exercise = await _unitOfWork.ExerciseRepository.GetById(exerciseId);
                         if (exercise == null)
-                            throw new Exception($"Exercise with ID {exerciseId} not found");
-
+                        {
+                            throw new NotFoundException($"Exercise with ID {exerciseId} not found");
+                        }
                         exercises.Add(exercise);
                     }
                 }
 
                 var planner = await _unitOfWork.PlannerRepository.GetPlannerByUser(user);
                 if (planner == null)
-                    throw new Exception($"Planner not found for user with ID {user.ProfileId}");
-
+                {
+                    throw new NotFoundException($"Planner not found for user with ID {user.ProfileId}");
+                }
 
                 if (meals.Count != 0)
                 {
@@ -69,19 +74,20 @@ namespace LifeStyle.Application.Planners.Commands
 
                 await _unitOfWork.BeginTransactionAsync();
                 await _unitOfWork.PlannerRepository.UpdatePlannerAsync(planner);
-
                 await _unitOfWork.SaveAsync();
-
                 await _unitOfWork.CommitTransactionAsync();
 
                 return true;
             }
+            catch (NotFoundException ex)
+            {
+                throw ex;
+            }
             catch (Exception ex)
             {
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Failed to update planner", ex);
+                throw new DataValidationException("Failed to update planner", ex);
             }
         }
-
     }
 }
