@@ -1,6 +1,7 @@
 ﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Domain.Exception;
 using MediatR;
+using Serilog;
 
 
 namespace LifeStyle.Application.Commands
@@ -11,15 +12,19 @@ namespace LifeStyle.Application.Commands
     {
 
         private readonly IUnitOfWork _unitOfWork;
+       
 
 
         public DeleteMealHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
+            Log.Information("DeleteMealHandler instance created.");
         }
 
         public async Task<Unit> Handle(DeleteMeal request, CancellationToken cancellationToken)
         {
+            Log.Information("Handling DeleteMeal command for Meal ID {MealId}...", request.MealId);
+
             try
             {
                 var meal = await _unitOfWork.MealRepository.GetById(request.MealId);
@@ -41,13 +46,14 @@ namespace LifeStyle.Application.Commands
             }
             catch (NotFoundException ex)
             {
-               
+                Log.Error(ex, "Meal not found");
                 throw new NotFoundException("Failed to delete meal: " + ex.Message);
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Failed to delete meal");
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new DataValidationException("Failed to delete meal", ex);
+                throw new Exception("Failed to delete meal", ex);
             }
         }
     }

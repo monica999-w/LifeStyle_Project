@@ -22,15 +22,6 @@ namespace LifeStyle.Application.Responses
             };
         }
 
-        public static Exercise FromExerciseDto(ExerciseDto exerciseDto)
-        {
-            return new Exercise
-            (
-                exerciseDto.Id,
-                exerciseDto.Name,
-                exerciseDto.DurationInMinutes,
-                exerciseDto.Type
-            );
-        }
+       
     }
 }

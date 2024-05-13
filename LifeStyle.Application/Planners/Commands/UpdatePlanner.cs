@@ -1,8 +1,10 @@
-﻿using LifeStyle.Application.Abstractions;
+﻿using AutoMapper;
+using LifeStyle.Application.Abstractions;
 using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
 using MediatR;
+using Serilog;
 
 
 namespace LifeStyle.Application.Planners.Commands
@@ -12,19 +14,26 @@ namespace LifeStyle.Application.Planners.Commands
     public class UpdatePlannerHandler : IRequestHandler<UpdatePlanner, bool>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public UpdatePlannerHandler(IUnitOfWork unitOfWork)
+        public UpdatePlannerHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
+
+            Log.Information("UpdatePlannerHandler instance created.");
+          
         }
 
         public async Task<bool> Handle(UpdatePlanner request, CancellationToken cancellationToken)
         {
+            Log.Information("Handling UpdatePlanner command...");
             try
             {
                 var user = await _unitOfWork.UserProfileRepository.GetById(request.UserId);
                 if (user == null)
                 {
+                    Log.Warning("Planner with User Id not found: ID={UserId}", request.UserId);
                     throw new NotFoundException($"User with ID {request.UserId} not found");
                 }
 
@@ -36,6 +45,7 @@ namespace LifeStyle.Application.Planners.Commands
                         var meal = await _unitOfWork.MealRepository.GetById(mealId);
                         if (meal == null)
                         {
+                            Log.Warning("Planner with Meal Id not found: ID={MealIds}", request.MealIds);
                             throw new NotFoundException($"Meal with ID {mealId} not found");
                         }
                         meals.Add(meal);
@@ -50,6 +60,7 @@ namespace LifeStyle.Application.Planners.Commands
                         var exercise = await _unitOfWork.ExerciseRepository.GetById(exerciseId);
                         if (exercise == null)
                         {
+                            Log.Warning("Planner with Exercise Id not found: ID={ExerciseIds}", request.ExerciseIds);
                             throw new NotFoundException($"Exercise with ID {exerciseId} not found");
                         }
                         exercises.Add(exercise);
@@ -71,22 +82,26 @@ namespace LifeStyle.Application.Planners.Commands
                 {
                     planner.Exercises = exercises;
                 }
-
+                Log.Information("Starting transaction...");
                 await _unitOfWork.BeginTransactionAsync();
                 await _unitOfWork.PlannerRepository.UpdatePlannerAsync(planner);
                 await _unitOfWork.SaveAsync();
+                Log.Information("Committing transaction...");
                 await _unitOfWork.CommitTransactionAsync();
+                Log.Information("Planner update successfully");
 
                 return true;
             }
             catch (NotFoundException ex)
             {
-                throw ex;
+                Log.Error(ex, "Not found exception");
+                throw;
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Failed to update planner");
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new DataValidationException("Failed to update planner", ex);
+                throw new Exception("Failed to update planner", ex);
             }
         }
     }

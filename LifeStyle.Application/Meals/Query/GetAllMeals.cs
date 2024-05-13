@@ -1,7 +1,10 @@
-﻿using LifeStyle.Application.Abstractions;
+﻿using AutoMapper;
+using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Exception;
+using LifeStyle.Domain.Models.Exercises;
 using MediatR;
+using Serilog;
 
 namespace LifeStyle.Application.Meals.Query
 {
@@ -11,22 +14,27 @@ namespace LifeStyle.Application.Meals.Query
     public class GetAllMealsHandler : IRequestHandler<GetAllMeals, List<MealDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public GetAllMealsHandler(IUnitOfWork unitOfWork)
+        public GetAllMealsHandler(IUnitOfWork unitOfWork,IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
+            Log.Information("GetAllMealsHandler instance created.");
         }
 
         public async Task<List<MealDto>> Handle(GetAllMeals request, CancellationToken cancellationToken)
         {
+            Log.Information("Handling GetAllMeals command...");
             try
             {
                 var meals = await _unitOfWork.MealRepository.GetAll();
-                return meals.Select(MealDto.FromMeal).ToList();
+                return _mapper.Map<List<MealDto>>(meals);
             }
             catch (Exception ex)
             {
-                throw new DataValidationException("Failed to retrieve all meals", ex);
+                Log.Error(ex, "Failed to retrieve all meals");
+                throw new Exception("Failed to retrieve all meals", ex);
             }
         }
     }

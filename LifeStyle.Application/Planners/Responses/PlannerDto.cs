@@ -6,6 +6,7 @@ namespace LifeStyle.Application.Planners.Responses
 {
     public class PlannerDto
     {
+        public int PlannerId { get; set; }
         public UserDto Profile { get; set; }
         public List<MealDto>? Meals { get; set; }
         public List<ExerciseDto>?Exercises { get; set; }

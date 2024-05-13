@@ -9,7 +9,7 @@ using LifeStyle.Infrastructure.Middleware;
 using LifeStyle.Infrastructure.Repository;
 using LifeStyle.Infrastructure.UnitOfWork;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
+using Serilog;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -33,12 +33,16 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
+builder.Host.UseSerilog((context, configuration) =>
+    configuration.ReadFrom.Configuration(context.Configuration));
 
 var app = builder.Build();
 
+
 // Middleware
-app.UseMiddleware<RequestProcessingTimeMiddleware>();
+//app.UseMiddleware<RequestProcessingTimeMiddleware>();
 
 
 // Configure the HTTP request pipeline.
@@ -47,6 +51,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseSerilogRequestLogging();
 
 
 app.UseHttpsRedirection();

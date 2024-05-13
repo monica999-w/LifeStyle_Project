@@ -1,9 +1,12 @@
-﻿using LifeStyle.Aplication.Interfaces;
+﻿using AutoMapper;
+using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Exception;
+using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,22 +19,27 @@ namespace LifeStyle.Application.Users.Query
     public class GetAllUsersHandler : IRequestHandler<GetAllUsers, List<UserDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-        public GetAllUsersHandler(IUnitOfWork unitOfWork)
+        public GetAllUsersHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
+            Log.Information("GetAllUsersHandler instance created.");
         }
 
         public async Task<List<UserDto>> Handle(GetAllUsers request, CancellationToken cancellationToken)
         {
+            Log.Information("Handling GetAllUsers command...");
             try
             {
                 var users = await _unitOfWork.UserProfileRepository.GetAll();
-                return users.Select(UserDto.FromUser).ToList();
+                return _mapper.Map<List<UserDto>>(users);
             }
             catch (Exception ex)
             {
-                throw new DataValidationException("Failed to retrieve all nutrients", ex);
+                Log.Error(ex, "Failed to retrieve all users");
+                throw new Exception("Failed to retrieve all users", ex);
             }
         }
     }

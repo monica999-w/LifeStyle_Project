@@ -1,4 +1,5 @@
-﻿using LifeStyle.Aplication.Interfaces;
+﻿using AutoMapper;
+using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Exception;
@@ -6,6 +7,7 @@ using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
+using Serilog;
 
 
 namespace LifeStyle.Application.Planners.Commands
@@ -15,20 +17,28 @@ namespace LifeStyle.Application.Planners.Commands
     public class DeletePlannerHandler : IRequestHandler<DeletePlanner, bool>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
 
-        public DeletePlannerHandler(IUnitOfWork unitOfWork)
+
+        public DeletePlannerHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
-          _unitOfWork = unitOfWork;
+            _unitOfWork = unitOfWork;
+            _mapper = mapper;
+            Log.Information("DeletePlannerHandler instance created.");
         }
 
         public async Task<bool> Handle(DeletePlanner request, CancellationToken cancellationToken)
         {
+            Log.Information("Handling DeletePlanner command...");
+
             try
             {
+                Log.Information("Deleting planner...");
                 var user = await _unitOfWork.UserProfileRepository.GetById(request.UserId);
                 if (user == null)
                 {
+                    Log.Warning("Planner with User Id not found: ID={UserId}", request.UserId);
                     throw new NotFoundException($"User with ID {request.UserId} not found");
                 }
 
@@ -40,6 +50,7 @@ namespace LifeStyle.Application.Planners.Commands
                     mealToRemove = await _unitOfWork.MealRepository.GetById(request.MealId.Value);
                     if (mealToRemove == null)
                     {
+                        Log.Warning("Planner with Meal Id not found: ID={MealId}", request.MealId);
                         throw new NotFoundException($"Meal with ID {request.MealId} not found");
                     }
                 }
@@ -49,6 +60,7 @@ namespace LifeStyle.Application.Planners.Commands
                     exerciseToRemove = await _unitOfWork.ExerciseRepository.GetById(request.ExerciseId.Value);
                     if (exerciseToRemove == null)
                     {
+                        Log.Warning("Planner with Exercise Id not found: ID={ExerciseId}", request.ExerciseId);
                         throw new NotFoundException($"Exercise with ID {request.ExerciseId} not found");
                     }
                 }
@@ -59,6 +71,7 @@ namespace LifeStyle.Application.Planners.Commands
                     throw new NotFoundException($"Planner not found for user with ID {user.ProfileId}");
                 }
 
+                Log.Information("Starting transaction...");
                 await _unitOfWork.BeginTransactionAsync();
 
                 if (mealToRemove != null)
@@ -81,18 +94,22 @@ namespace LifeStyle.Application.Planners.Commands
                 }
 
                 await _unitOfWork.SaveAsync();
+                Log.Information("Committing transaction...");
                 await _unitOfWork.CommitTransactionAsync();
+                Log.Information("Planner deleted successfully");
 
                 return true;
             }
             catch (NotFoundException ex)
             {
-                throw ex;
+                Log.Error(ex, "Not found exception");
+                throw ;
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Failed to delete planner");
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new DataValidationException("Failed to delete planner", ex);
+                throw new Exception("Failed to delete planner", ex);
             }
         }
 

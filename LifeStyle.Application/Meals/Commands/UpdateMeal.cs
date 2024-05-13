@@ -1,10 +1,12 @@
-﻿using LifeStyle.Aplication.Interfaces;
+﻿using AutoMapper;
+using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Enums;
 using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Meal;
 using MediatR;
+using Serilog;
 
 
 namespace LifeStyle.Application.Commands
@@ -15,14 +17,19 @@ namespace LifeStyle.Application.Commands
     {
 
         private readonly IUnitOfWork _unitOfWork;
+        private IMapper _mapper;
 
-        public UpdateMealHandler(IUnitOfWork unitOfWork)
+        public UpdateMealHandler(IUnitOfWork unitOfWork,IMapper mapper)
         {
             _unitOfWork = unitOfWork;
+            _mapper = mapper;
+            Log.Information("UpdateMealHandler instance created.");
         }
 
         public async Task<MealDto> Handle(UpdateMeal request, CancellationToken cancellationToken)
         {
+            Log.Information("Handling UpdateMeal command for Meal ID {MealId}...", request.MealId);
+
             try
             {
                 var meal = await _unitOfWork.MealRepository.GetById(request.MealId);
@@ -40,17 +47,18 @@ namespace LifeStyle.Application.Commands
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
-                return MealDto.FromMeal(meal);
+                return _mapper.Map<MealDto>(meal);
             }
             catch (NotFoundException ex)
             {
-                await _unitOfWork.RollbackTransactionAsync();
-                throw new NotFoundException("Failed to update meal: " + ex.Message);
+                Log.Error(ex, "Meal not found");
+                throw;
             }
             catch (Exception ex)
             {
+                Log.Error(ex, "Failed to update meal");
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new DataValidationException("Failed to update meal", ex);
+                throw new Exception("Failed to update meal", ex);
             }
         }
     }

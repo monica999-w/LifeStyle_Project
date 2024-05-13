@@ -1,11 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MediatR;
 using LifeStyle.Application.Commands;
-using LifeStyle.Application.Users.Query;
 using LifeStyle.Application.Exercises.Query;
 using LifeStyle.Application.Query;
-using System.ComponentModel.DataAnnotations;
 using LifeStyle.Domain.Exception;
+using AutoMapper;
 
 
 
@@ -16,10 +15,12 @@ namespace LifeStyle.Controllers
     public class ExerciseController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IMapper _mapper;
 
-        public ExerciseController(IMediator mediator)
+        public ExerciseController(IMediator mediator,IMapper mapper)
         {
             _mediator = mediator;
+            _mapper = mapper;
         }
 
         [HttpGet]
@@ -122,10 +123,6 @@ namespace LifeStyle.Controllers
             catch (NotFoundException ex)
             {
                 return NotFound("Exercise not found: " + ex.Message);
-            }
-            catch (DataValidationException ex)
-            {
-                return StatusCode(500, "An error occurred while updating the exercise: " + ex.Message);
             }
             catch (Exception ex)
             {
