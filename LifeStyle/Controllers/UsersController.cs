@@ -1,5 +1,6 @@
 ﻿using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Application.Commands;
+using LifeStyle.Application.Responses;
 using LifeStyle.Application.Users.Commands;
 using LifeStyle.Application.Users.Query;
 using LifeStyle.Domain.Exception;
@@ -7,6 +8,8 @@ using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using static LifeStyle.Domain.InputValidator;
 
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -18,10 +21,12 @@ namespace LifeStyle.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly EntityValidator<UserProfile> _validator;
 
         public UsersController(IMediator mediator)
         {
             _mediator = mediator;
+            _validator = new EntityValidator<UserProfile>();
         }
 
         [HttpGet]
@@ -52,28 +57,21 @@ namespace LifeStyle.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
-            }
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] CreateUser request)
+        public async Task<IActionResult> CreateUser([FromBody] UserDto user)
         {
             try
             {
-                var result = await _mediator.Send(request);
+                var command = new CreateUser(user.Email, user.PhoneNumber, user.Weight, user.Height);
+                var result = await _mediator.Send(command);
                 return Ok(result);
             }
             
             catch(AlreadyExistsException ex)
             {
                 return Conflict(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
 
@@ -90,32 +88,28 @@ namespace LifeStyle.Controllers
             {
                 return NotFound(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
-            }
         }
 
         [HttpPut("{userId}")]
-        public async Task<IActionResult> UpdateUser(int userId, UpdateUser request)
+        public async Task<IActionResult> UpdateUser(int userId, [FromBody]UserDto updateUser)
         {
             try
-            {
-                if (userId != request.UserId)
-                {
-                    return BadRequest();
-                }
+            { 
+                
+                var command = new UpdateUser(updateUser.Id,updateUser.Email,updateUser.PhoneNumber,updateUser.Weight, updateUser.Height);
 
-                var result = await _mediator.Send(request);
+                if (userId != updateUser.Id)
+                {
+                    return BadRequest("User ID in URL does not match User ID in request body");
+                }
+               
+
+                var result = await _mediator.Send(command);
                 return Ok(result);
             }
             catch (DataValidationException ex)
             {
                 return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
     }

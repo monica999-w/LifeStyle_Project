@@ -1,5 +1,6 @@
 ﻿using LifeStyle.Application.Responses;
 using LifeStyle.Models.Planner;
+using System.Collections.ObjectModel;
 
 
 namespace LifeStyle.Application.Planners.Responses
@@ -8,17 +9,9 @@ namespace LifeStyle.Application.Planners.Responses
     {
         public int PlannerId { get; set; }
         public UserDto Profile { get; set; }
-        public List<MealDto>? Meals { get; set; }
-        public List<ExerciseDto>?Exercises { get; set; }
+        public Collection<MealDto>? Meals { get; set; }
+        public Collection<ExerciseDto>?Exercises { get; set; }
 
-        public static PlannerDto FromPlanner(Planner planner)
-        {
-            return new PlannerDto
-            {
-                Profile = UserDto.FromUser(planner.Profile),
-                Meals = planner.Meals?.Select(MealDto.FromMeal).ToList(),
-                Exercises = planner.Exercises?.Select(ExerciseDto.FromExercise).ToList()
-            };
-        }
+        
     }
 }

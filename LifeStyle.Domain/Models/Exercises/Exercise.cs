@@ -1,7 +1,9 @@
 ﻿using LifeStyle.Domain.Enums;
-using LifeStyle.Models.Planner;
+
+using Newtonsoft.Json.Converters;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 
 namespace LifeStyle.Domain.Models.Exercises
@@ -17,7 +19,6 @@ namespace LifeStyle.Domain.Models.Exercises
         public int DurationInMinutes { get; set; }
 
         [EnumDataType(typeof(ExerciseType))]
-        [Column(TypeName = "nvarchar(20)")]
         public ExerciseType Type { get; set; }
       
 

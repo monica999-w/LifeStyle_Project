@@ -13,7 +13,7 @@ using System.Threading;
 
 namespace LifeStyle.Application.Commands
 {
-    public record CreateMeal(string Name, MealType MealType, Nutrients Nutrients) : IRequest<MealDto>;
+    public record CreateMeal(string Name, MealType MealType, NutrientDto Nutrients) : IRequest<MealDto>;
 
     public class CreateMealHandler : IRequestHandler<CreateMeal, MealDto>
     {
@@ -34,24 +34,16 @@ namespace LifeStyle.Application.Commands
             try
             {
                 Log.Information("Handling CreateMeal command...");
-                Nutrients nutrient;
+                //Nutrients nutrient;
+ 
+                var nutrientDto = await _createNutrientHandler.Handle(
+                new CreateNutrient(request.Nutrients.Calories, request.Nutrients.Protein, request.Nutrients.Carbohydrates, request.Nutrients.Fat),
+                cancellationToken);
+               var nutrient = _mapper.Map<Nutrients>(nutrientDto);
+                Log.Information("New nutrient created: {NutrientId}", nutrient.NutrientId);
 
-                var existingNutrient = await _unitOfWork.NutrientRepository.GetById(request.Nutrients.NutrientId);
-                if (existingNutrient != null)
-                {
-                    nutrient = existingNutrient;
-                    Log.Information("Existing nutrient found: {NutrientId}", nutrient.NutrientId);
-                }
-                else
-                {
-                    var nutrientDto = await _createNutrientHandler.Handle(
-                    new CreateNutrient(request.Nutrients.Calories, request.Nutrients.Protein, request.Nutrients.Carbohydrates, request.Nutrients.Fat),
-                    cancellationToken);
-                    nutrient= NutrientDto.FromNutrientDto(nutrientDto);
-                    Log.Information("New nutrient created: {NutrientId}", nutrient.NutrientId);
-
-                }
-
+               
+                  
                 if (string.IsNullOrWhiteSpace(request.Name))
                 {
                     Log.Error("Meal name cannot be empty");
@@ -63,28 +55,24 @@ namespace LifeStyle.Application.Commands
                 {
                     Log.Error($"A meal with the name '{request.Name}' already exists");
                     throw new AlreadyExistsException($"A meal with the name '{request.Name}' already exists");
-                } 
+                }
                 await _unitOfWork.BeginTransactionAsync();
 
                 var newMeal = new Meal
                 {
-                        Name = request.Name,
-                        MealType = request.MealType,
-                        Nutrients = nutrient
+                    Name = request.Name,
+                    MealType = request.MealType,
+                    Nutrients = nutrient
                 };
-               
-               await _unitOfWork.MealRepository.Add(newMeal);
-               await _unitOfWork.SaveAsync();
-               await _unitOfWork.CommitTransactionAsync();
-               Log.Information("Meal created successfully: {MealName}", newMeal.Name);
+
+                await _unitOfWork.MealRepository.Add(newMeal);
+                await _unitOfWork.SaveAsync();
+                await _unitOfWork.CommitTransactionAsync();
+                Log.Information("Meal created successfully: {MealName}", newMeal.Name);
 
                 return _mapper.Map<MealDto>(newMeal);
             }
-            catch (ValidationException ex)
-            {
-                Log.Error(ex, "Validation error");
-                throw;
-            }
+
             catch (AlreadyExistsException ex)
             {
                 Log.Error(ex, "Already exists error");

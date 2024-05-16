@@ -1,9 +1,15 @@
 ﻿using LifeStyle.Application.Commands;
 using LifeStyle.Application.Meals.Query;
+using LifeStyle.Application.Responses;
+using LifeStyle.Domain;
+using LifeStyle.Domain.Enums;
 using LifeStyle.Domain.Exception;
+using LifeStyle.Domain.Models.Exercises;
+using LifeStyle.Domain.Models.Meal;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
+using static LifeStyle.Domain.InputValidator;
 
 
 namespace LifeStyle.Controllers
@@ -13,10 +19,12 @@ namespace LifeStyle.Controllers
     public class MealController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly EntityValidator<Meal> _validator;
 
         public MealController(IMediator mediator)
         {
             _mediator = mediator;
+            _validator = new EntityValidator<Meal>();
         }
 
         [HttpGet]
@@ -47,18 +55,16 @@ namespace LifeStyle.Controllers
             {
                 return NotFound("Meal not found: " + ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An unexpected error occurred while retrieving the meal: " + ex.Message);
-            }
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateMeal(CreateMeal request)
+        public async Task<IActionResult> CreateMeal([FromBody] MealDto meal)
         {
             try
             {
-                var result = await _mediator.Send(request);
+                var command = new CreateMeal(meal.Name, meal.MealType,meal.Nutrients);
+
+                var result = await _mediator.Send(command);
                 return Ok(result);
             }
             catch (ValidationException ex)
@@ -68,10 +74,6 @@ namespace LifeStyle.Controllers
             catch (AlreadyExistsException ex)
             {
                 return Conflict("Meal already exists: " + ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An unexpected error occurred while creating the meal: " + ex.Message);
             }
         }
 
@@ -88,23 +90,16 @@ namespace LifeStyle.Controllers
             {
                 return NotFound("Meal not found: " + ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An unexpected error occurred while deleting the meal: " + ex.Message);
-            }
         }
 
         [HttpPut("{mealId}")]
-        public async Task<IActionResult> UpdateMeal(int mealId, [FromBody] UpdateMeal request)
+        public async Task<IActionResult> UpdateMeal(int mealId, [FromBody] MealDto updateMeal)
         {
-            if (mealId != request.MealId)
-            {
-                return BadRequest("Mismatch between meal ID in URL and request body");
-            }
-
+         
             try
             {
-                var result = await _mediator.Send(request);
+                var command = new UpdateMeal(mealId, updateMeal.Name, updateMeal.MealType, updateMeal.Nutrients);
+                var result = await _mediator.Send(command);
                 return Ok(result);
             }
             catch (NotFoundException ex)
@@ -114,10 +109,6 @@ namespace LifeStyle.Controllers
             catch (ValidationException ex)
             {
                 return BadRequest("Invalid request: " + ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An unexpected error occurred while updating the meal: " + ex.Message);
             }
         }
     }

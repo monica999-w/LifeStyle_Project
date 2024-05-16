@@ -40,8 +40,12 @@ namespace LifeStyle.Application.Commands
 
                 Log.Information("Starting transaction...");
                 await _unitOfWork.BeginTransactionAsync();
-                var newExercise = _mapper.Map<Exercise>(request);
-                
+                var newExercise = new Exercise
+                {
+                    Name = request.Name,
+                    DurationInMinutes = request.DurationInMinutes,
+                    Type = request.Type
+                };
 
 
                 Log.Information("Adding exercise to repository...");

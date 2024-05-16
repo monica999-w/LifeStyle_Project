@@ -10,7 +10,9 @@ namespace LifeStyle.Domain.Models.Meal
 
         [Required(ErrorMessage = "Name is required")]
         [StringLength(50, MinimumLength = 3, ErrorMessage = "Name length must be between 3 and 50 characters")]
-        public string? Name { get; set; } 
+        public string? Name { get; set; }
+
+        [EnumDataType(typeof(MealType))]
         public MealType MealType { get; set; }
         public Nutrients? Nutrients { get; set; } 
        

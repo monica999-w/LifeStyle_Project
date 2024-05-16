@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LifeStyle.Infrastructure.Migrations
 {
     [DbContext(typeof(LifeStyleContext))]
-    [Migration("20240424085638_Inital")]
+    [Migration("20240514172512_Inital")]
     partial class Inital
     {
         /// <inheritdoc />
@@ -58,7 +58,7 @@ namespace LifeStyle.Infrastructure.Migrations
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("nvarchar(20)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ExerciseId");
 

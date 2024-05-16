@@ -19,7 +19,7 @@ namespace LifeStyle.Application.Commands
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
 
-        public UpdateExerciseHandler(IUnitOfWork unitOfWork, IMapper mapper )
+        public UpdateExerciseHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
             _mapper = mapper;
@@ -40,12 +40,14 @@ namespace LifeStyle.Application.Commands
                     throw new NotFoundException($"Exercise with ID {request.ExerciseId} not found");
                 }
 
-                _mapper.Map(request, exercise);
+                exercise.Name = request.Name;
+                exercise.DurationInMinutes = request.DurationInMinutes;
+                exercise.Type = request.Type;
 
                 Log.Information("Starting transaction...");
                 await _unitOfWork.BeginTransactionAsync();
 
-                await _unitOfWork.ExerciseRepository.Update(exercise);
+                await _unitOfWork.ExerciseRepository.Update(exercise); 
                 await _unitOfWork.SaveAsync();
 
                 Log.Information("Committing transaction...");
@@ -53,7 +55,8 @@ namespace LifeStyle.Application.Commands
 
                 Log.Information("Exercise updated successfully: ID={ExerciseId}", request.ExerciseId);
 
-                return _mapper.Map<ExerciseDto>(exercise);
+                var updatedExerciseDto = _mapper.Map<ExerciseDto>(exercise);
+                return updatedExerciseDto;
             }
             catch (NotFoundException ex)
             {
@@ -72,5 +75,6 @@ namespace LifeStyle.Application.Commands
                 throw new Exception("Failed to update exercise", ex);
             }
         }
+
     }
 }

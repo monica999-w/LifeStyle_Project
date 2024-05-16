@@ -19,6 +19,7 @@ builder.Services.AddScoped<IRepository<Nutrients>, NutrientRepository>();
 builder.Services.AddScoped<IRepository<Meal>, MealRepository>();
 builder.Services.AddScoped<IRepository<UserProfile>, UserRepository>();
 builder.Services.AddScoped<IPlannerRepository, PlannerRepository>();
+//builder.Services.AddScoped<ErrorHandlingMiddleware>();
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IPlannerRepository).Assembly));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -42,7 +43,7 @@ var app = builder.Build();
 
 
 // Middleware
-//app.UseMiddleware<RequestProcessingTimeMiddleware>();
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 
 // Configure the HTTP request pipeline.

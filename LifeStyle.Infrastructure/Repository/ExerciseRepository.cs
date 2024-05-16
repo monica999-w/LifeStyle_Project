@@ -24,7 +24,7 @@ namespace LifeStyle.Aplication.Logic
             }
             catch (Exception ex)
             {
-                throw new DataValidationException("An error occurred while retrieving exercises.", ex);
+                throw new Exception("An error occurred while retrieving exercises.", ex);
             }
         }
 
@@ -32,6 +32,7 @@ namespace LifeStyle.Aplication.Logic
         {
             try
             {
+
                 _lifeStyleContext.Exercises.Add(entity);
                 await _lifeStyleContext.SaveChangesAsync();
                 return entity;
@@ -42,7 +43,7 @@ namespace LifeStyle.Aplication.Logic
             }
             catch (Exception ex)
             {
-                throw new DataValidationException("An error occurred while adding the exercise.", ex);
+                throw new Exception("An error occurred while adding the exercise.", ex);
             }
         }
 
@@ -64,7 +65,7 @@ namespace LifeStyle.Aplication.Logic
             }
             catch (Exception ex)
             {
-                throw new DataValidationException("An error occurred while removing the exercise.", ex);
+                throw new Exception("An error occurred while removing the exercise.", ex);
             }
         }
 
@@ -88,7 +89,7 @@ namespace LifeStyle.Aplication.Logic
             }
             catch (Exception ex)
             {
-                throw new DataValidationException("An error occurred while updating the exercise.", ex);
+                throw new Exception("An error occurred while updating the exercise.", ex);
             }
         }
 
@@ -101,7 +102,7 @@ namespace LifeStyle.Aplication.Logic
             }
             catch (Exception ex)
             {
-                throw new DataValidationException("An error occurred while retrieving the exercise by ID.", ex);
+                throw new Exception("An error occurred while retrieving the exercise by ID.", ex);
             }
         }
 
@@ -114,7 +115,7 @@ namespace LifeStyle.Aplication.Logic
             }
             catch (Exception ex)
             {
-                throw new DataValidationException("An error occurred while retrieving the exercise by name.", ex);
+                throw new Exception("An error occurred while retrieving the exercise by name.", ex);
             }
         }
 
@@ -126,7 +127,7 @@ namespace LifeStyle.Aplication.Logic
             }
             catch (Exception ex)
             {
-                throw new DataValidationException("An error occurred while retrieving the last exercise ID.", ex);
+                throw new Exception("An error occurred while retrieving the last exercise ID.", ex);
             }
         }
     }

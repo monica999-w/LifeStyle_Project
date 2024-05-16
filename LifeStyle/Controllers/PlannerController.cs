@@ -1,9 +1,11 @@
-﻿
-using LifeStyle.Application.Planners.Commands;
+﻿using LifeStyle.Application.Planners.Commands;
 using LifeStyle.Application.Planners.Query;
+using LifeStyle.Application.Planners.Responses;
 using LifeStyle.Domain.Exception;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+
+
 
 namespace LifeStyle.Controllers
 {
@@ -34,11 +36,12 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePlanner([FromBody] CreatePlanner createPlanner)
+        public async Task<IActionResult> CreatePlanner([FromBody] PlannerDto planner)
         {
             try
             {
-                var result = await _mediator.Send(createPlanner);
+              
+                var result = await _mediator.Send(planner);
                 return Ok(result);
             }
             catch (NotFoundException ex)
@@ -49,11 +52,9 @@ namespace LifeStyle.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
-            }
         }
+
+       
 
         [HttpDelete("{userId}")]
         public async Task<IActionResult> DeleteUser([FromBody] DeletePlanner request)
@@ -66,10 +67,6 @@ namespace LifeStyle.Controllers
             catch (NotFoundException ex)
             {
                 return NotFound(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
             }
         }
 
@@ -88,11 +85,7 @@ namespace LifeStyle.Controllers
             catch (DataValidationException ex)
             {
                 return BadRequest(ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "Internal server error: " + ex.Message);
-            }
+            }  
         }
     }
 }

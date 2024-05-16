@@ -5,6 +5,11 @@ using LifeStyle.Application.Exercises.Query;
 using LifeStyle.Application.Query;
 using LifeStyle.Domain.Exception;
 using AutoMapper;
+using LifeStyle.Domain;
+using System.ComponentModel.DataAnnotations;
+using LifeStyle.Domain.Models.Exercises;
+using static LifeStyle.Domain.InputValidator;
+using LifeStyle.Application.Responses;
 
 
 
@@ -15,12 +20,11 @@ namespace LifeStyle.Controllers
     public class ExerciseController : ControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly IMapper _mapper;
+      
 
-        public ExerciseController(IMediator mediator,IMapper mapper)
+        public ExerciseController(IMediator mediator)
         {
             _mediator = mediator;
-            _mapper = mapper;
         }
 
         [HttpGet]
@@ -31,10 +35,6 @@ namespace LifeStyle.Controllers
                 var request = new GetAllExercise();
                 var result = await _mediator.Send(request);
                 return Ok(result);
-            }
-            catch (DataValidationException ex)
-            {
-                return StatusCode(500, "An error occurred while retrieving all exercises from repository: " + ex.Message);
             }
             catch (Exception ex)
             {
@@ -55,28 +55,22 @@ namespace LifeStyle.Controllers
             {
                 return NotFound("Exercise not found: " + ex.Message);
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An unexpected error occurred while retrieving the exercise by ID: " + ex.Message);
-            }
         }
 
 
         [HttpPost]
-        public async Task<IActionResult> Create(CreateExercise command)
+        public async Task<IActionResult> Create([FromBody] ExerciseDto exercise)
         {
             try
             {
+                var command = new CreateExercise(exercise.Name, exercise.DurationInMinutes, exercise.Type);
                 var result = await _mediator.Send(command);
+              
                 return Ok(result);
             }
             catch (AlreadyExistsException ex)
             {
                 return Conflict("Exercise already exists: " + ex.Message);
-            }
-            catch (DataValidationException ex)
-            {
-                return BadRequest("Failed to create exercise: " + ex.Message);
             }
             catch (Exception ex)
             {
@@ -97,21 +91,15 @@ namespace LifeStyle.Controllers
             {
                 return NotFound("Exercise not found: " + ex.Message);
             }
-            catch (DataValidationException ex)
-            {
-                return StatusCode(500, "An error occurred while deleting the exercise: " + ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An unexpected error occurred while deleting the exercise: " + ex.Message);
-            }
         }
 
         [HttpPut("{exerciseId}")]
-        public async Task<IActionResult> Update(int exerciseId, UpdateExercise command)
+        public async Task<IActionResult> Update(int exerciseId, [FromBody]ExerciseDto updateExercise)
         {
             try
             {
+                var command = new UpdateExercise(updateExercise.Id,updateExercise.Name, updateExercise.DurationInMinutes, updateExercise.Type);
+
                 if (exerciseId != command.ExerciseId)
                 {
                     return BadRequest("Exercise ID in URL does not match Exercise ID in request body");
@@ -123,10 +111,6 @@ namespace LifeStyle.Controllers
             catch (NotFoundException ex)
             {
                 return NotFound("Exercise not found: " + ex.Message);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, "An unexpected error occurred while updating the exercise: " + ex.Message);
             }
         }
 

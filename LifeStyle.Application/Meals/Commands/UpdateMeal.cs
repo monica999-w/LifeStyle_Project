@@ -11,13 +11,14 @@ using Serilog;
 
 namespace LifeStyle.Application.Commands
 {
-    public record UpdateMeal(int MealId, string Name, MealType MealType, Nutrients Nutrients) : IRequest<MealDto>;
+    public record UpdateMeal(int MealId, string Name, MealType MealType, NutrientDto Nutrients) : IRequest<MealDto>;
 
     public class UpdateMealHandler : IRequestHandler<UpdateMeal, MealDto>
     {
 
         private readonly IUnitOfWork _unitOfWork;
         private IMapper _mapper;
+        private readonly IRequestHandler<UpdateNutrient, NutrientDto> _updateNutrientHandler;
 
         public UpdateMealHandler(IUnitOfWork unitOfWork,IMapper mapper)
         {
@@ -38,10 +39,7 @@ namespace LifeStyle.Application.Commands
                     throw new NotFoundException($"Meal with ID {request.MealId} not found");
                 }
 
-                meal.Name = request.Name;
-                meal.MealType = request.MealType;
-                meal.Nutrients = request.Nutrients;
-
+            
                 await _unitOfWork.BeginTransactionAsync();
                 await _unitOfWork.MealRepository.Update(meal);
                 await _unitOfWork.SaveAsync();

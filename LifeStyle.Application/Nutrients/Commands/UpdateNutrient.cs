@@ -2,18 +2,13 @@
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Exception;
-using LifeStyle.Domain.Models.Exercises;
 using MediatR;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace LifeStyle.Application.Commands
 {
-    public record UpdateNutrient(int NutrientId,double Calories, double Protein, double Carbohydrates, double Fat) : IRequest<NutrientDto>;
+    public record UpdateNutrient(int MealId,double Calories, double Protein, double Carbohydrates, double Fat) : IRequest<NutrientDto>;
 
     public class UpdateNutrientHandler : IRequestHandler<UpdateNutrient, NutrientDto>
     {
@@ -35,13 +30,9 @@ namespace LifeStyle.Application.Commands
 
             try
             {
-                Log.Information("Updating nutrient with Id {NutrientId}", request.NutrientId);
-                var nutrient = await _unitOfWork.NutrientRepository.GetById(request.NutrientId);
-                if (nutrient == null)
-                {
-                    Log.Warning("Nutrient not found: ID={NutrientId}", request.NutrientId);
-                    throw new NotFoundException($"Nutrient with ID {request.NutrientId} not found");
-                }
+                Log.Information("Updating nutrient with Id {NutrientId}", request.MealId);
+                var nutrient = await _unitOfWork.NutrientRepository.GetById(request.MealId);
+                
 
                 nutrient.Protein=request.Protein;
                 nutrient.Calories=request.Calories;
@@ -57,7 +48,7 @@ namespace LifeStyle.Application.Commands
                 Log.Information("Committing transaction...");
                 await _unitOfWork.CommitTransactionAsync();
 
-                Log.Information("Nutrient updated successfully: ID={NutrientId}", request.NutrientId);
+                Log.Information("Nutrient updated successfully");
 
                 return _mapper.Map<NutrientDto>(nutrient);
             }

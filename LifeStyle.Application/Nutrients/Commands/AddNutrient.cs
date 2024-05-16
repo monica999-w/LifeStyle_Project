@@ -49,7 +49,9 @@ namespace LifeStyle.Application.Commands
                 await _unitOfWork.SaveAsync();
                 Log.Information("Committing transaction...");
                 await _unitOfWork.CommitTransactionAsync();
-                return NutrientDto.FromNutrient(newNutrient); 
+                var nutrientDto = _mapper.Map<NutrientDto>(newNutrient);
+
+                return nutrientDto;
 
             }
             catch (Exception ex)

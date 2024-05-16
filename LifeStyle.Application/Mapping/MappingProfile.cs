@@ -21,15 +21,10 @@ namespace LifeStyle.Application.Mapping
                 opt => opt.MapFrom(src => src.ExerciseId)
                 );
             CreateMap<ExerciseDto, Exercise>();
-            CreateMap<CreateExercise, Exercise>();
-            CreateMap<UpdateExercise, Exercise>();
+          
 
             //meal
-            CreateMap<Meal, MealDto>()
-                .ForMember(
-                dest => dest.Id,
-                opt => opt.MapFrom(src => src.MealId)
-                );
+            CreateMap<Meal, MealDto>();
             CreateMap<MealDto, Meal>();
 
             //nutrient
@@ -47,9 +42,6 @@ namespace LifeStyle.Application.Mapping
                 opt => opt.MapFrom(src => src.ProfileId)
                 );
             CreateMap<UserDto,UserProfile>();
-
-
-              
         }
     }
 }
