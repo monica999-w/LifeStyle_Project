@@ -3,26 +3,26 @@ using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Planners.Responses;
 using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Users;
+using LifeStyle.Models.Planner;
 using MediatR;
 using Serilog;
 
 namespace LifeStyle.Application.Planners.Query
 {
-    public record GetPlannersByUser(UserProfile UserProfile) : IRequest<List<PlannerDto>>;
-    public class GetPlannersByUserHandler : IRequestHandler<GetPlannersByUser, List<PlannerDto>>
+    public record GetPlannersByUser(UserProfile UserProfile) : IRequest<Planner>;
+    public class GetPlannersByUserHandler : IRequestHandler<GetPlannersByUser,Planner>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+      
 
-        public GetPlannersByUserHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public GetPlannersByUserHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             Log.Information("GetPlannersByUserHandler instance created.");
            
         }
 
-        public async Task<List<PlannerDto>> Handle(GetPlannersByUser request, CancellationToken cancellationToken)
+        public async Task<Planner> Handle(GetPlannersByUser request, CancellationToken cancellationToken)
         {
             Log.Information("Handling GetPlannersByUser command...");
             try
@@ -31,11 +31,9 @@ namespace LifeStyle.Application.Planners.Query
                 if (planner == null)
                 {
                     Log.Warning("No planner found for user {UserId}.", request.UserProfile.ProfileId);
-                    return new List<PlannerDto>();
+                    throw new NotFoundException($"Planner not found");
                 }
-                var plannerDto = _mapper.Map<PlannerDto>(planner);
-                Log.Information("Planner found for user {UserId}.", request.UserProfile.ProfileId);
-                return new List<PlannerDto> { plannerDto };
+                 return planner;
             }
             catch (NotFoundException ex)
             {

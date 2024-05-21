@@ -1,5 +1,4 @@
 ﻿using AutoMapper;
-using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Enums;
@@ -11,23 +10,22 @@ using Serilog;
 
 namespace LifeStyle.Application.Commands
 {
-    public record UpdateMeal(int MealId, string Name, MealType MealType, NutrientDto Nutrients) : IRequest<MealDto>;
+    public record UpdateMeal(int MealId, string Name, MealType MealType, Nutrients Nutrients) : IRequest<Meal>;
 
-    public class UpdateMealHandler : IRequestHandler<UpdateMeal, MealDto>
+    public class UpdateMealHandler : IRequestHandler<UpdateMeal, Meal>
     {
 
         private readonly IUnitOfWork _unitOfWork;
-        private IMapper _mapper;
-        private readonly IRequestHandler<UpdateNutrient, NutrientDto> _updateNutrientHandler;
+        private readonly IRequestHandler<UpdateNutrient, Nutrients> _updateNutrientHandler;
 
-        public UpdateMealHandler(IUnitOfWork unitOfWork,IMapper mapper)
+        public UpdateMealHandler(IUnitOfWork unitOfWork, IRequestHandler<UpdateNutrient, Nutrients> updateNutrientHandler)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
+            _updateNutrientHandler = updateNutrientHandler;
             Log.Information("UpdateMealHandler instance created.");
         }
 
-        public async Task<MealDto> Handle(UpdateMeal request, CancellationToken cancellationToken)
+        public async Task<Meal> Handle(UpdateMeal request, CancellationToken cancellationToken)
         {
             Log.Information("Handling UpdateMeal command for Meal ID {MealId}...", request.MealId);
 
@@ -39,13 +37,24 @@ namespace LifeStyle.Application.Commands
                     throw new NotFoundException($"Meal with ID {request.MealId} not found");
                 }
 
-            
+                meal.Name = request.Name;
+                meal.MealType = request.MealType;
+
+                if (request.Nutrients == null)
+                {
+                    throw new ArgumentNullException("Nutrients cannot be null");
+                }
+                // Update Nutrients
+                var updatedNutrient = await _updateNutrientHandler.Handle(new UpdateNutrient(request.MealId, request.Nutrients.Calories, request.Nutrients.Protein, request.Nutrients.Carbohydrates, request.Nutrients.Fat), cancellationToken);
+
+                meal.Nutrients = updatedNutrient;
+
                 await _unitOfWork.BeginTransactionAsync();
                 await _unitOfWork.MealRepository.Update(meal);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
 
-                return _mapper.Map<MealDto>(meal);
+                return meal;
             }
             catch (NotFoundException ex)
             {

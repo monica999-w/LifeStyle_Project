@@ -1,5 +1,6 @@
 ﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Domain.Exception;
+using LifeStyle.Domain.Models.Meal;
 using MediatR;
 using Serilog;
 
@@ -12,12 +13,12 @@ namespace LifeStyle.Application.Commands
     {
 
         private readonly IUnitOfWork _unitOfWork;
-       
+        private readonly IRequestHandler<DeleteNutrient, Nutrients> _deleteNutrientHandler;
 
-
-        public DeleteMealHandler(IUnitOfWork unitOfWork)
+        public DeleteMealHandler(IUnitOfWork unitOfWork, IRequestHandler<DeleteNutrient, Nutrients> deleteNutrientHandler)
         {
             _unitOfWork = unitOfWork;
+            _deleteNutrientHandler = deleteNutrientHandler;
             Log.Information("DeleteMealHandler instance created.");
         }
 
@@ -32,6 +33,13 @@ namespace LifeStyle.Application.Commands
                 if (meal == null)
                 {
                     throw new NotFoundException($"Meal with ID {request.MealId} not found");
+                }
+
+              
+                var nutrient = await _unitOfWork.NutrientRepository.GetById(meal.Nutrients.NutrientId);
+                if (nutrient != null)
+                {
+                    await _deleteNutrientHandler.Handle(new DeleteNutrient(nutrient.NutrientId), cancellationToken);
                 }
 
                 await _unitOfWork.BeginTransactionAsync();

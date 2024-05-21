@@ -13,26 +13,24 @@ using System.Threading.Tasks;
 
 namespace LifeStyle.Application.Query
 {
-    public record GetAllNutrient : IRequest<List<NutrientDto>>;
-    public class GetAllNutrientsHandler : IRequestHandler<GetAllNutrient, List<NutrientDto>>
+    public record GetAllNutrient : IRequest<List<Nutrients>>;
+    public class GetAllNutrientsHandler : IRequestHandler<GetAllNutrient, List<Nutrients>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public GetAllNutrientsHandler(IUnitOfWork unitOfWork,IMapper mapper)
+        public GetAllNutrientsHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             Log.Information("GetAllNutrientsHandler instance created.");
         }
 
-        public async Task<List<NutrientDto>> Handle(GetAllNutrient request, CancellationToken cancellationToken)
+        public async Task<List<Nutrients>> Handle(GetAllNutrient request, CancellationToken cancellationToken)
         {
             Log.Information("Handling GetAllNutrient command...");
             try
             {
                 var nutrient = await _unitOfWork.NutrientRepository.GetAll();
-                return _mapper.Map<List<NutrientDto>>(nutrient);
+                return nutrient;
             }
             catch (Exception ex)
             {

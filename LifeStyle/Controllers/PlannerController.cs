@@ -1,9 +1,16 @@
-﻿using LifeStyle.Application.Planners.Commands;
+﻿using AutoMapper;
+using LifeStyle.Application.Commands;
+using LifeStyle.Application.Planners.Commands;
 using LifeStyle.Application.Planners.Query;
 using LifeStyle.Application.Planners.Responses;
+using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Exception;
+using LifeStyle.Domain.Models.Exercises;
+using LifeStyle.Domain.Models.Meal;
+using LifeStyle.Domain.Models.Users;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.TeamFoundation.Work.WebApi;
 
 
 
@@ -14,19 +21,22 @@ namespace LifeStyle.Controllers
     public class PlannerController : ControllerBase
     {
         private readonly IMediator _mediator;
+        private readonly IMapper _mapper;
 
-        public PlannerController(IMediator mediator)
+        public PlannerController(IMediator mediator, IMapper mapper)
         {
             _mediator = mediator;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllPlanners()
+        public async Task<ActionResult<IEnumerable<PlannerDto>>> GetAllPlanners()
         {
             try
             {
                 var request = new GetAllPlanners();
                 var result = await _mediator.Send(request);
+                var mappedResult = _mapper.Map<List<PlannerDto>>(result);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -36,13 +46,75 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreatePlanner([FromBody] PlannerDto planner)
+        public async Task<IActionResult> CreatePlanner([FromBody] PlannerDto plannerDto)
         {
             try
             {
-              
-                var result = await _mediator.Send(planner);
-                return Ok(result);
+                var command = new CreatePlanner(
+            plannerDto.ProfileId,
+            plannerDto.MealIds,
+            plannerDto.ExerciseIds
+        );
+
+                var result = await _mediator.Send(command);
+
+                // Construim un nou obiect PlannerDto cu doar ID-urile
+                var mappedResult = new PlannerDto
+                {
+                    PlannerId = result.PlannerId,
+                    ProfileId = plannerDto.ProfileId,
+                    MealIds = result.Meals?.Select(m => m.MealId).ToList() ?? new List<int>(),
+                    ExerciseIds = result.Exercises?.Select(e => e.ExerciseId).ToList() ?? new List<int>()
+                };
+
+                return Ok(mappedResult);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            
+        }
+
+
+        [HttpDelete("{plannerId}")]
+        public async Task<IActionResult> DeletePlanner(int plannerId)
+        {
+            try
+            {
+                var command = new DeletePlanner(plannerId);
+                var result = await _mediator.Send(command);
+                if (result == null)
+                    return NotFound();
+
+                return NoContent();
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+
+        }
+
+        [HttpPut]
+        public async Task<IActionResult> UpdatePlanner([FromBody] PlannerDto plannerDto)
+        {
+            try
+            {
+                var command = new UpdatePlanner(
+                    plannerDto.PlannerId,
+                    plannerDto.MealIds,
+                    plannerDto.ExerciseIds
+                );
+
+                var result = await _mediator.Send(command);
+
+                if (result)
+                {
+                    return Ok("Planner updated successfully");
+                }
+
+                return BadRequest("Failed to update planner");
             }
             catch (NotFoundException ex)
             {
@@ -52,40 +124,7 @@ namespace LifeStyle.Controllers
             {
                 return BadRequest(ex.Message);
             }
-        }
-
-       
-
-        [HttpDelete("{userId}")]
-        public async Task<IActionResult> DeleteUser([FromBody] DeletePlanner request)
-        {
-            try
-            {
-                var result = await _mediator.Send(request);
-                return Ok(result);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-        }
-
-        [HttpPost("update")]
-        public async Task<IActionResult> UpdatePlanner([FromBody] UpdatePlanner request)
-        {
-            try
-            {
-                var result = await _mediator.Send(request);
-                return Ok(result);
-            }
-            catch (NotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (DataValidationException ex)
-            {
-                return BadRequest(ex.Message);
-            }  
+           
         }
     }
 }

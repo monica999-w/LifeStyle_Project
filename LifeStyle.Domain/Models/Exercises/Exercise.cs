@@ -1,9 +1,6 @@
 ﻿using LifeStyle.Domain.Enums;
-
-using Newtonsoft.Json.Converters;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-using System.Text.Json.Serialization;
+
 
 
 namespace LifeStyle.Domain.Models.Exercises

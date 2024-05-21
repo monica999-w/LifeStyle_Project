@@ -18,7 +18,7 @@ namespace LifeStyle.Infrastructure.Repository
 
         }
 
-        public async Task<IEnumerable<Nutrients>> GetAll()
+        public async Task<List<Nutrients>> GetAll()
         {
 
             return await _lifeStyleContext.Nutrients

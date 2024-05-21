@@ -24,13 +24,9 @@ namespace LifeStyle.Infrastructure.UnitOfWork
 
         public IRepository<Exercise> ExerciseRepository {  get; private set; }
         public IRepository<Nutrients> NutrientRepository { get; private set; }
-
         public IRepository<Meal> MealRepository { get; private set; }
-
         public IRepository<UserProfile> UserProfileRepository { get; private set; }
-
         public IPlannerRepository PlannerRepository { get; private set; }
-
         public async Task BeginTransactionAsync()
         {
             await _lifeStyleContext.Database.BeginTransactionAsync();
@@ -39,18 +35,23 @@ namespace LifeStyle.Infrastructure.UnitOfWork
         {
             await _lifeStyleContext.Database.CommitTransactionAsync();
         }
-
-        public async void Dispose()
+        public void Dispose()
         {
-            _lifeStyleContext.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
         }
-
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _lifeStyleContext.Dispose();
+            }
+        }
 
         public async Task RollbackTransactionAsync()
         {
             await _lifeStyleContext.Database.RollbackTransactionAsync();
         }
-
         public async Task SaveAsync()
         {
            await _lifeStyleContext.SaveChangesAsync();

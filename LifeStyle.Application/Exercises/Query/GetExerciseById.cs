@@ -2,25 +2,25 @@
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Exception;
+using LifeStyle.Domain.Models.Exercises;
 using MediatR;
 using Serilog;
 
 
 namespace LifeStyle.Application.Query
 {
-    public record GetExerciseById(int ExerciseId) : IRequest<ExerciseDto>;
-    public class GetExerciseByIdHandler : IRequestHandler<GetExerciseById, ExerciseDto>
+    public record GetExerciseById(int ExerciseId) : IRequest<Exercise>;
+    public class GetExerciseByIdHandler : IRequestHandler<GetExerciseById, Exercise>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-        public GetExerciseByIdHandler(IUnitOfWork unitOfWork, IMapper mapper)
+     
+        public GetExerciseByIdHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             Log.Information("GetExerciseByIdHandler instance created.");
         }
 
-        public async Task<ExerciseDto> Handle(GetExerciseById request, CancellationToken cancellationToken)
+        public async Task<Exercise> Handle(GetExerciseById request, CancellationToken cancellationToken)
         {
             Log.Information("Handling GetExerciseById command for Exercise ID {ExerciseId}...", request.ExerciseId);
 
@@ -33,7 +33,7 @@ namespace LifeStyle.Application.Query
                     throw new NotFoundException($"Exercise with ID {request.ExerciseId} not found");
                 }
 
-                return _mapper.Map<ExerciseDto>(exercise);
+                return exercise;
             }
             catch (NotFoundException ex)
             {

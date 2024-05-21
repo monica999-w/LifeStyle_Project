@@ -1,34 +1,24 @@
-﻿using AutoMapper;
-using LifeStyle.Aplication.Interfaces;
-using LifeStyle.Application.Abstractions;
-using LifeStyle.Application.Responses;
+﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Domain.Exception;
-using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
 using Serilog;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+
 
 namespace LifeStyle.Application.Users.Query
 {
-    public record GetUserById(int UserId) : IRequest<UserDto>;
-    public class GetUserByIdHandler : IRequestHandler<GetUserById, UserDto>
+    public record GetUserById(int UserId) : IRequest<UserProfile>;
+    public class GetUserByIdHandler : IRequestHandler<GetUserById, UserProfile>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public GetUserByIdHandler(IUnitOfWork unitOfWork,IMapper mapper)
+        public GetUserByIdHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             Log.Information("GetUserByIdHandler instance created.");
         }
 
-        public async Task<UserDto> Handle(GetUserById request, CancellationToken cancellationToken)
+        public async Task<UserProfile> Handle(GetUserById request, CancellationToken cancellationToken)
         {
             Log.Information("Handling GetUserById command for User ID {UserId}...", request.UserId);
             try
@@ -39,7 +29,7 @@ namespace LifeStyle.Application.Users.Query
                     Log.Warning("User not found: ID={UserId}", request.UserId);
                     throw new NotFoundException($"User with ID {request.UserId} not found");
                 }
-                return _mapper.Map<UserDto>(user);
+                return user;
             }
             catch (NotFoundException ex)
             {

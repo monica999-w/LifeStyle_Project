@@ -14,12 +14,12 @@ namespace LifeStyle.Application.Planners.Commands
     public class UpdatePlannerHandler : IRequestHandler<UpdatePlanner, bool>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+      
 
-        public UpdatePlannerHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpdatePlannerHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
+            
 
             Log.Information("UpdatePlannerHandler instance created.");
           

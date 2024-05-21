@@ -11,21 +11,21 @@ using Serilog;
 
 namespace LifeStyle.Application.Commands
 {
-    public record CreateUser( string Email ,string PhoneNumber, double Height, double Weight): IRequest<UserDto>;
-    public  class CreateUserHander : IRequestHandler<CreateUser,UserDto>
+    public record CreateUser( string Email ,string PhoneNumber, double Height, double Weight): IRequest<UserProfile>;
+    public  class CreateUserHander : IRequestHandler<CreateUser, UserProfile>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public CreateUserHander(IUnitOfWork unitOfWork, IMapper mapper)
+
+        public CreateUserHander(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
+          
             Log.Information("CreateUserHander instance created.");
           
         }
 
-        public async Task<UserDto> Handle(CreateUser request, CancellationToken cancellationToken)
+        public async Task<UserProfile> Handle(CreateUser request, CancellationToken cancellationToken)
         {
             Log.Information("Handling CreateExercise command...");
             try
@@ -55,7 +55,7 @@ namespace LifeStyle.Application.Commands
                 await _unitOfWork.CommitTransactionAsync();
                 Log.Information("User created successfully: ID={ExerciseId}", newUser.ProfileId);
 
-                return _mapper.Map<UserDto>(newUser);
+                return newUser;
             }
             catch(AlreadyExistsException ex)
             {

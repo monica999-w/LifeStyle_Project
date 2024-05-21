@@ -20,7 +20,7 @@ namespace LifeStyle.Aplication.Logic
            
         }
 
-        public async Task<IEnumerable<UserProfile>> GetAll()
+        public async Task<List<UserProfile>> GetAll()
         {
             return await _lifeStyleContext.UserProfiles
                 .ToListAsync();

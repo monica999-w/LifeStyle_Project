@@ -15,26 +15,25 @@ using System.Threading.Tasks;
 
 namespace LifeStyle.Application.Users.Query
 {
-    public record GetAllUsers : IRequest<List<UserDto>>;
-    public class GetAllUsersHandler : IRequestHandler<GetAllUsers, List<UserDto>>
+    public record GetAllUsers : IRequest<List<UserProfile>>;
+    public class GetAllUsersHandler : IRequestHandler<GetAllUsers, List<UserProfile>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+       
 
-        public GetAllUsersHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public GetAllUsersHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             Log.Information("GetAllUsersHandler instance created.");
         }
 
-        public async Task<List<UserDto>> Handle(GetAllUsers request, CancellationToken cancellationToken)
+        public async Task<List<UserProfile>> Handle(GetAllUsers request, CancellationToken cancellationToken)
         {
             Log.Information("Handling GetAllUsers command...");
             try
             {
                 var users = await _unitOfWork.UserProfileRepository.GetAll();
-                return _mapper.Map<List<UserDto>>(users);
+                return users;
             }
             catch (Exception ex)
             {

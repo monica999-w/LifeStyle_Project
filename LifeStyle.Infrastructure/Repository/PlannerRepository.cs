@@ -46,6 +46,14 @@ namespace LifeStyle.Aplication.Logic
                 .FirstOrDefaultAsync(p => p.Profile == profile);
             return planner;
         }
+        public async Task<Planner?> GetPlannerById(int id)
+        {
+
+            var planner = await _lifeStyleContext.Planners
+                .FirstOrDefaultAsync(e => e.PlannerId == id);
+
+            return planner;
+        }
 
         public async Task<IEnumerable<Planner>> GetAll()
         {

@@ -11,23 +11,22 @@ using Serilog;
 
 namespace LifeStyle.Application.Users.Commands
 {
-    public record DeleteUser(int UserId) : IRequest<Unit>;
+    public record DeleteUser(int UserId) : IRequest<UserProfile>;
 
-    public class DeleteUserHandler : IRequestHandler<DeleteUser, Unit>
+    public class DeleteUserHandler : IRequestHandler<DeleteUser, UserProfile>
     {
 
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+    
 
 
-        public DeleteUserHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public DeleteUserHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             Log.Information("DeleteUserHandler instance created.");
         }
 
-        public async Task<Unit> Handle(DeleteUser request, CancellationToken cancellationToken)
+        public async Task<UserProfile> Handle(DeleteUser request, CancellationToken cancellationToken)
         {
             Log.Information("Handling DeleteUser command...");
 
@@ -53,12 +52,12 @@ namespace LifeStyle.Application.Users.Commands
                 Log.Information("Committing transaction...");
                 await _unitOfWork.CommitTransactionAsync();
                 Log.Information("User deleted successfully: ID={UserId}", request.UserId);
-                return Unit.Value;
+                return user;
             }
             catch(NotFoundException ex)
             {
                 Log.Error(ex, "User not found");
-                throw ;
+                throw;
             }
 
             catch (Exception ex)

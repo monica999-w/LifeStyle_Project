@@ -19,7 +19,7 @@ namespace LifeStyle.Aplication.Logic
 
         }
 
-        public async Task<IEnumerable<Meal>> GetAll()
+        public async Task<List<Meal>> GetAll()
         {
 
             return await _lifeStyleContext.Meals

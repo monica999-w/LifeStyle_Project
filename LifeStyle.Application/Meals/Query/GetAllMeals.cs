@@ -3,33 +3,32 @@ using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Exercises;
+using LifeStyle.Domain.Models.Meal;
 using MediatR;
 using Serilog;
 
 namespace LifeStyle.Application.Meals.Query
 {
-    public record GetAllMeals : IRequest<List<MealDto>>;
+    public record GetAllMeals : IRequest<List<Meal>>;
 
-
-    public class GetAllMealsHandler : IRequestHandler<GetAllMeals, List<MealDto>>
+    public class GetAllMealsHandler : IRequestHandler<GetAllMeals, List<Meal>>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+      
 
-        public GetAllMealsHandler(IUnitOfWork unitOfWork,IMapper mapper)
+        public GetAllMealsHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             Log.Information("GetAllMealsHandler instance created.");
         }
 
-        public async Task<List<MealDto>> Handle(GetAllMeals request, CancellationToken cancellationToken)
+        public async Task<List<Meal>> Handle(GetAllMeals request, CancellationToken cancellationToken)
         {
             Log.Information("Handling GetAllMeals command...");
             try
             {
                 var meals = await _unitOfWork.MealRepository.GetAll();
-                return _mapper.Map<List<MealDto>>(meals);
+                return meals;
             }
             catch (Exception ex)
             {

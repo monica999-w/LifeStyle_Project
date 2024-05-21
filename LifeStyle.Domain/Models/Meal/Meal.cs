@@ -1,6 +1,7 @@
 ﻿using LifeStyle.Domain.Enums;
 using System.ComponentModel.DataAnnotations;
 
+
 namespace LifeStyle.Domain.Models.Meal
 {
     public class Meal

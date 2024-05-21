@@ -28,7 +28,11 @@ namespace LifeStyle.Infrastructure.Context
            modelBuilder.ApplyConfiguration(new PlannerEntityTypeConfiguration());
            modelBuilder.ApplyConfiguration(new ExerciseEntityTypeConfiguration());
 
+            base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Meal>()
+                .Property(m => m.MealId)
+                .ValueGeneratedOnAdd();
         }
     }
 }

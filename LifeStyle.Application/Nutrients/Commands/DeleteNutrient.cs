@@ -1,30 +1,27 @@
 ﻿using AutoMapper;
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Domain.Exception;
+using LifeStyle.Domain.Models.Meal;
 using MediatR;
 using Serilog;
 
 
 namespace LifeStyle.Application.Commands
 {
-    public record DeleteNutrient(int NutrientId) : IRequest<Unit>;
+    public record DeleteNutrient(int NutrientId) : IRequest<Nutrients>;
 
-    public class DeleteNutrientHandler : IRequestHandler<DeleteNutrient, Unit>
+    public class DeleteNutrientHandler : IRequestHandler<DeleteNutrient, Nutrients>
     {
 
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;   
 
-
-
-        public DeleteNutrientHandler(IUnitOfWork unitOfWork,IMapper mapper)
+        public DeleteNutrientHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             Log.Information("DeleteNutrientHandler instance created.");
         }
 
-        public async Task<Unit> Handle(DeleteNutrient request, CancellationToken cancellationToken)
+        public async Task<Nutrients> Handle(DeleteNutrient request, CancellationToken cancellationToken)
         {
 
             Log.Information("Handling DeleteNutrient command...");
@@ -50,7 +47,7 @@ namespace LifeStyle.Application.Commands
 
                 Log.Information("Nutrient deleted successfully: ID={NutrientId}", request.NutrientId);
 
-                return Unit.Value;
+                return nutrient;
             }
             catch (NotFoundException ex)
             {

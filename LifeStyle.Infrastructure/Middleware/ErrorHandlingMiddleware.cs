@@ -28,16 +28,6 @@ namespace LifeStyle.Infrastructure.Middleware
             {
                 await _next(context);
             }
-            catch (AlreadyExistsException ex)
-            {
-                _logger.LogError(ex, "AlreadyExistsException occurred: {Message}", ex.Message);
-
-                context.Response.StatusCode = StatusCodes.Status409Conflict;
-                context.Response.ContentType = "application/json";
-
-                var response = new { message = "Exercise already exists: " + ex.Message };
-                await context.Response.WriteAsync(JsonConvert.SerializeObject(response));
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An unexpected error occurred.");

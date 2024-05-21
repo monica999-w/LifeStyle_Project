@@ -4,12 +4,9 @@ using LifeStyle.Application.Commands;
 using LifeStyle.Application.Exercises.Query;
 using LifeStyle.Application.Query;
 using LifeStyle.Domain.Exception;
-using AutoMapper;
-using LifeStyle.Domain;
-using System.ComponentModel.DataAnnotations;
-using LifeStyle.Domain.Models.Exercises;
-using static LifeStyle.Domain.InputValidator;
 using LifeStyle.Application.Responses;
+using AutoMapper;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 
 
@@ -20,21 +17,23 @@ namespace LifeStyle.Controllers
     public class ExerciseController : ControllerBase
     {
         private readonly IMediator _mediator;
-      
+        private readonly IMapper _mapper;
 
-        public ExerciseController(IMediator mediator)
+
+        public ExerciseController(IMediator mediator,IMapper mapper)
         {
             _mediator = mediator;
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllExercises()
+        public async Task<ActionResult<IEnumerable<ExerciseDto>>> GetAllExercises()
         {
-            try
-            {
-                var request = new GetAllExercise();
-                var result = await _mediator.Send(request);
-                return Ok(result);
+            try 
+            { 
+                var result = await _mediator.Send( new GetAllExercise());
+                var mappedResult = _mapper.Map<List<ExerciseDto>>(result);
+                return Ok(mappedResult);
             }
             catch (Exception ex)
             {
@@ -43,13 +42,17 @@ namespace LifeStyle.Controllers
         }
 
         [HttpGet("{exerciseId}")]
-        public async Task<IActionResult> GetExerciseById(int exerciseId)
+        public async Task<ActionResult> GetExerciseById(int exerciseId)
         {
             try
             {
-                var request = new GetExerciseById(exerciseId);
-                var result = await _mediator.Send(request);
-                return Ok(result);
+                var exercise = await _mediator.Send(new GetExerciseById(exerciseId));
+                if (exercise == null)
+                    return NotFound();
+
+                var mappedResult = _mapper.Map<ExerciseDto>(exercise);
+                return Ok(mappedResult);
+
             }
             catch (NotFoundException ex)
             {
@@ -59,13 +62,13 @@ namespace LifeStyle.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ExerciseDto exercise)
+        public async Task<IActionResult> Create([FromBody] ExerciseDto exerciseDto)
         {
             try
             {
+                var exercise = _mapper.Map<ExerciseDto>(exerciseDto);
                 var command = new CreateExercise(exercise.Name, exercise.DurationInMinutes, exercise.Type);
                 var result = await _mediator.Send(command);
-              
                 return Ok(result);
             }
             catch (AlreadyExistsException ex)
@@ -85,7 +88,10 @@ namespace LifeStyle.Controllers
             try
             {
                 var result = await _mediator.Send(new DeleteExercise(exerciseId));
-                return Ok();
+                if (result == null)
+                    return NotFound();
+
+                return NoContent();
             }
             catch (NotFoundException ex)
             {
@@ -105,8 +111,9 @@ namespace LifeStyle.Controllers
                     return BadRequest("Exercise ID in URL does not match Exercise ID in request body");
                 }
 
-                var result = await _mediator.Send(command);
-                return Ok(result);
+                var updatedExercise = await _mediator.Send(command);
+                var updatedExerciseDto = _mapper.Map<ExerciseDto>(updatedExercise);
+                return Ok(updatedExerciseDto);
             }
             catch (NotFoundException ex)
             {

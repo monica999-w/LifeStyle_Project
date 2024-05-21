@@ -1,18 +1,13 @@
-﻿using LifeStyle.Aplication.Interfaces;
+﻿using AutoMapper;
+using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Application.Commands;
 using LifeStyle.Application.Responses;
 using LifeStyle.Application.Users.Commands;
 using LifeStyle.Application.Users.Query;
 using LifeStyle.Domain.Exception;
-using LifeStyle.Domain.Models.Exercises;
-using LifeStyle.Domain.Models.Users;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
-using static LifeStyle.Domain.InputValidator;
 
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace LifeStyle.Controllers
 {
@@ -21,22 +16,23 @@ namespace LifeStyle.Controllers
     public class UsersController : ControllerBase
     {
         private readonly IMediator _mediator;
-        private readonly EntityValidator<UserProfile> _validator;
+        private readonly IMapper _mapper;
 
-        public UsersController(IMediator mediator)
+        public UsersController(IMediator mediator,IMapper mapper)
         {
             _mediator = mediator;
-            _validator = new EntityValidator<UserProfile>();
+            _mapper = mapper;
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllUsers()
+        public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
         {
             try
             {
                 var request = new GetAllUsers();
                 var result = await _mediator.Send(request);
-                return Ok(result);
+                var mappedResult = _mapper.Map<List<UserDto>>(result);
+                return Ok(mappedResult);
             }
             catch (Exception ex)
             {
@@ -45,13 +41,14 @@ namespace LifeStyle.Controllers
         }
 
         [HttpGet("{userId}")]
-        public async Task<IActionResult> GetUserById(int userId)
+        public async Task<ActionResult> GetUserById(int userId)
         {
             try
             {
                 var request = new GetUserById(userId);
                 var result = await _mediator.Send(request);
-                return Ok(result);
+                var mappedResult = _mapper.Map<UserDto>(result);
+                return Ok(mappedResult);
             }
             catch (NotFoundException ex)
             {
@@ -60,15 +57,15 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateUser([FromBody] UserDto user)
+        public async Task<IActionResult> CreateUser([FromBody] UserDto userDto)
         {
             try
             {
+                var user = _mapper.Map<UserDto>(userDto);
                 var command = new CreateUser(user.Email, user.PhoneNumber, user.Weight, user.Height);
                 var result = await _mediator.Send(command);
                 return Ok(result);
             }
-            
             catch(AlreadyExistsException ex)
             {
                 return Conflict(ex.Message);
@@ -82,6 +79,8 @@ namespace LifeStyle.Controllers
             {
                 var request = new DeleteUser(userId);
                 await _mediator.Send(request);
+                if (request == null)
+                    return NotFound();
                 return NoContent();
             }
             catch (NotFoundException ex)
@@ -105,7 +104,8 @@ namespace LifeStyle.Controllers
                
 
                 var result = await _mediator.Send(command);
-                return Ok(result);
+                var updatedUserDto = _mapper.Map<UserDto>(result);
+                return Ok(updatedUserDto);
             }
             catch (DataValidationException ex)
             {

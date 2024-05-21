@@ -16,7 +16,7 @@ namespace LifeStyle.Aplication.Logic
             _lifeStyleContext = lifeStyleContext;
         }
 
-        public async Task<IEnumerable<Exercise>> GetAll()
+        public async Task<List<Exercise>> GetAll()
         {
             try
             {
@@ -32,7 +32,6 @@ namespace LifeStyle.Aplication.Logic
         {
             try
             {
-
                 _lifeStyleContext.Exercises.Add(entity);
                 await _lifeStyleContext.SaveChangesAsync();
                 return entity;

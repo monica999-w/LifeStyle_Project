@@ -8,22 +8,21 @@ using Serilog;
 
 namespace LifeStyle.Application.Commands
 {
-    public record DeleteExercise(int ExerciseId) : IRequest<Unit>;
+    public record DeleteExercise(int ExerciseId) : IRequest<Exercise>;
 
-    public class DeleteExerciseHandler : IRequestHandler<DeleteExercise, Unit>
+    public class DeleteExerciseHandler : IRequestHandler<DeleteExercise, Exercise>
     {
 
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-
-        public DeleteExerciseHandler( IUnitOfWork unitOfWork, IMapper mapper)
+       
+        public DeleteExerciseHandler( IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
+           
             Log.Information("DeleteExerciseHandler instance created.");
         }
 
-        public async Task<Unit> Handle(DeleteExercise request, CancellationToken cancellationToken)
+        public async Task<Exercise> Handle(DeleteExercise request, CancellationToken cancellationToken)
         {
             Log.Information("Handling DeleteExercise command...");
 
@@ -50,7 +49,7 @@ namespace LifeStyle.Application.Commands
 
                 Log.Information("Exercise deleted successfully: ID={ExerciseId}", request.ExerciseId);
 
-                return Unit.Value;
+                return exercise;
             }
             catch (NotFoundException ex)
             {

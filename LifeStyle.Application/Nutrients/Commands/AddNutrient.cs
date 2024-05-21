@@ -9,23 +9,22 @@ using Serilog;
 
 namespace LifeStyle.Application.Commands
 {
-    public record CreateNutrient(double Calories,  double Protein, double Carbohydrates , double Fat ) : IRequest<NutrientDto>;
+    public record CreateNutrient(double Calories,  double Protein, double Carbohydrates , double Fat ) : IRequest<Nutrients>;
 
-    public class CreateNutrientHandler : IRequestHandler<CreateNutrient, NutrientDto>
+    public class CreateNutrientHandler : IRequestHandler<CreateNutrient, Nutrients>
     {
 
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+        
 
-
-        public CreateNutrientHandler(IUnitOfWork unitOfWork,IMapper mapper)
+        public CreateNutrientHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
+         
             Log.Information("CreateNutrientHandler instance created.");
         }
 
-        public async Task<NutrientDto> Handle(CreateNutrient request, CancellationToken cancellationToken)
+        public async Task<Nutrients> Handle(CreateNutrient request, CancellationToken cancellationToken)
         {
             Log.Information("Handling CreateNutrient command...");
             try
@@ -49,9 +48,9 @@ namespace LifeStyle.Application.Commands
                 await _unitOfWork.SaveAsync();
                 Log.Information("Committing transaction...");
                 await _unitOfWork.CommitTransactionAsync();
-                var nutrientDto = _mapper.Map<NutrientDto>(newNutrient);
+               
 
-                return nutrientDto;
+                return newNutrient;
 
             }
             catch (Exception ex)

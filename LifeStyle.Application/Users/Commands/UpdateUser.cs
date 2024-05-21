@@ -3,6 +3,7 @@ using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Exercises;
+using LifeStyle.Domain.Models.Users;
 using MediatR;
 using Serilog;
 
@@ -10,23 +11,21 @@ using Serilog;
 namespace LifeStyle.Application.Users.Commands
 {
 
-    public record UpdateUser(int UserId,string Email, string PhoneNumber, double Height, double Weight) : IRequest<UserDto>;
+    public record UpdateUser(int UserId,string Email, string PhoneNumber, double Height, double Weight) : IRequest<UserProfile>;
 
-    public class UpdateUserHandler : IRequestHandler<UpdateUser, UserDto>
+    public class UpdateUserHandler : IRequestHandler<UpdateUser, UserProfile>
     {
 
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public UpdateUserHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpdateUserHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             Log.Information("UpdateUserHandler instance created.");
            
         }
 
-        public async Task<UserDto> Handle(UpdateUser request, CancellationToken cancellationToken)
+        public async Task<UserProfile> Handle(UpdateUser request, CancellationToken cancellationToken)
         {
             Log.Information("Handling UpdateUser command...");
             try
@@ -53,7 +52,7 @@ namespace LifeStyle.Application.Users.Commands
                 await _unitOfWork.CommitTransactionAsync();
                 Log.Information("User updated successfully: ID={UserId}", request.UserId);
 
-                return _mapper.Map<UserDto>(user);
+                return user;
             }
             catch(NotFoundException ex)
             {

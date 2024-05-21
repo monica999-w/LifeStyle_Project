@@ -10,6 +10,7 @@ namespace LifeStyle.Aplication.Interfaces
         Task<Planner> AddPlanner(Planner planner);
         Task<Planner> RemovePlanner(Planner planner);
         Task<Planner> GetPlannerByUser(UserProfile profile);
+        Task<Planner> GetPlannerById(int id);
         Task<Planner> UpdatePlannerAsync(Planner planner);
         Task<IEnumerable<Planner>> GetAll();
 

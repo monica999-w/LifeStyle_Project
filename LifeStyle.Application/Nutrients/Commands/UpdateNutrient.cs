@@ -2,29 +2,28 @@
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Exception;
+using LifeStyle.Domain.Models.Meal;
 using MediatR;
 using Serilog;
 
 
 namespace LifeStyle.Application.Commands
 {
-    public record UpdateNutrient(int MealId,double Calories, double Protein, double Carbohydrates, double Fat) : IRequest<NutrientDto>;
+    public record UpdateNutrient(int MealId,double Calories, double Protein, double Carbohydrates, double Fat) : IRequest<Nutrients>;
 
-    public class UpdateNutrientHandler : IRequestHandler<UpdateNutrient, NutrientDto>
+    public class UpdateNutrientHandler : IRequestHandler<UpdateNutrient, Nutrients>
     {
 
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public UpdateNutrientHandler(IUnitOfWork unitOfWork,IMapper mapper)
+        public UpdateNutrientHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
 
             Log.Information("UpdateNutrientHandler instance created.");
         }
 
-        public async Task<NutrientDto> Handle(UpdateNutrient request, CancellationToken cancellationToken)
+        public async Task<Nutrients> Handle(UpdateNutrient request, CancellationToken cancellationToken)
         {
             Log.Information("Handling UpdateNutrient command...");
 
@@ -50,7 +49,7 @@ namespace LifeStyle.Application.Commands
 
                 Log.Information("Nutrient updated successfully");
 
-                return _mapper.Map<NutrientDto>(nutrient);
+                return nutrient;
             }
             catch(NotFoundException ex)
             {

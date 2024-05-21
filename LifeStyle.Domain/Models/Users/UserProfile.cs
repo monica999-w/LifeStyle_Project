@@ -1,5 +1,4 @@
-﻿using LifeStyle.Models.Planner;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace LifeStyle.Domain.Models.Users
 {

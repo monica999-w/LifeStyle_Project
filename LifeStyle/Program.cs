@@ -1,6 +1,7 @@
 using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Aplication.Logic;
 using LifeStyle.Application.Abstractions;
+using LifeStyle.Application.Commands;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Domain.Models.Users;
@@ -21,7 +22,7 @@ builder.Services.AddScoped<IRepository<UserProfile>, UserRepository>();
 builder.Services.AddScoped<IPlannerRepository, PlannerRepository>();
 //builder.Services.AddScoped<ErrorHandlingMiddleware>();
 
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(IPlannerRepository).Assembly));
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateExercise).Assembly));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 var configuration = builder.Configuration;

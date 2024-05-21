@@ -7,7 +7,7 @@ namespace LifeStyle.Aplication.Interfaces
         Task<T> Add(T entity);
         Task<T> Remove(T entity);
         Task<T> Update(T entity);
-        Task<IEnumerable<T>> GetAll();
+        Task<List<T>> GetAll();
         Task<T?> GetById(int id);
         int GetLastId();
         Task<T> GetByName(string name);

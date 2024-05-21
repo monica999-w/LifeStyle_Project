@@ -11,21 +11,19 @@ using Serilog;
 
 namespace LifeStyle.Application.Commands
 {
-    public record CreateExercise(string Name, int DurationInMinutes, ExerciseType Type) : IRequest<ExerciseDto>;
+    public record CreateExercise(string Name, int DurationInMinutes, ExerciseType Type) : IRequest<Exercise>;
 
-    public class CreateExerciseHandler : IRequestHandler<CreateExercise, ExerciseDto>
+    public class CreateExerciseHandler : IRequestHandler<CreateExercise, Exercise>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
 
-        public CreateExerciseHandler(IUnitOfWork unitOfWork,IMapper mapper)
+        public CreateExerciseHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             Log.Information("CreateExerciseHandler instance created.");
         }
 
-        public async Task<ExerciseDto> Handle(CreateExercise request, CancellationToken cancellationToken)
+        public async Task<Exercise> Handle(CreateExercise request, CancellationToken cancellationToken)
         {
             Log.Information("Handling CreateExercise command...");
             try
@@ -55,9 +53,7 @@ namespace LifeStyle.Application.Commands
                 Log.Information("Committing transaction...");
                 await _unitOfWork.CommitTransactionAsync();
                 Log.Information("Exercise created successfully: ID={ExerciseId}", newExercise.ExerciseId);
-
-
-                return _mapper.Map<ExerciseDto>(newExercise);
+                return newExercise;
             }
             catch (AlreadyExistsException ex)
             {

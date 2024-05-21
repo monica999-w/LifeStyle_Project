@@ -8,38 +8,34 @@ using LifeStyle.Domain.Models.Meal;
 using MediatR;
 using Serilog;
 using System.ComponentModel.DataAnnotations;
-using System.Threading;
 
 
 namespace LifeStyle.Application.Commands
 {
-    public record CreateMeal(string Name, MealType MealType, NutrientDto Nutrients) : IRequest<MealDto>;
+    public record CreateMeal(string Name, MealType MealType, Nutrients Nutrients) : IRequest<Meal>;
 
-    public class CreateMealHandler : IRequestHandler<CreateMeal, MealDto>
+    public class CreateMealHandler : IRequestHandler<CreateMeal, Meal>
     {
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
-        private readonly IRequestHandler<CreateNutrient, NutrientDto> _createNutrientHandler;
+        private readonly IRequestHandler<CreateNutrient, Nutrients> _createNutrientHandler;
 
-        public CreateMealHandler(IUnitOfWork unitOfWork,IMapper mapper, IRequestHandler<CreateNutrient, NutrientDto> createNutrientHandler)
+        public CreateMealHandler(IUnitOfWork unitOfWork, IRequestHandler<CreateNutrient, Nutrients> createNutrientHandler)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             _createNutrientHandler = createNutrientHandler;
             Log.Information("CreateMealHandler instance created.");
         }
 
-        public async Task<MealDto> Handle(CreateMeal request, CancellationToken cancellationToken)
+        public async Task<Meal> Handle(CreateMeal request, CancellationToken cancellationToken)
         {
             try
             {
                 Log.Information("Handling CreateMeal command...");
-                //Nutrients nutrient;
- 
-                var nutrientDto = await _createNutrientHandler.Handle(
+               
+                var nutrient = await _createNutrientHandler.Handle(
                 new CreateNutrient(request.Nutrients.Calories, request.Nutrients.Protein, request.Nutrients.Carbohydrates, request.Nutrients.Fat),
                 cancellationToken);
-               var nutrient = _mapper.Map<Nutrients>(nutrientDto);
+              
                 Log.Information("New nutrient created: {NutrientId}", nutrient.NutrientId);
 
                
@@ -62,15 +58,15 @@ namespace LifeStyle.Application.Commands
                 {
                     Name = request.Name,
                     MealType = request.MealType,
-                    Nutrients = nutrient
+                    Nutrients = nutrient,
                 };
 
                 await _unitOfWork.MealRepository.Add(newMeal);
                 await _unitOfWork.SaveAsync();
                 await _unitOfWork.CommitTransactionAsync();
-                Log.Information("Meal created successfully: {MealName}", newMeal.Name);
+                Log.Information("Meal created successfully: {MealId}", newMeal.MealId);
 
-                return _mapper.Map<MealDto>(newMeal);
+                return newMeal;
             }
 
             catch (AlreadyExistsException ex)

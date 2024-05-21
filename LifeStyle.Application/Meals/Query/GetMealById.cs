@@ -2,15 +2,16 @@
 using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Exception;
+using LifeStyle.Domain.Models.Meal;
 using MediatR;
 using Serilog;
 
 
 namespace LifeStyle.Application.Meals.Query
 {
-    public record GetMealById(int MealId) : IRequest<MealDto>;
+    public record GetMealById(int MealId) : IRequest<Meal>;
 
-    public class GetMealByIdHandler : IRequestHandler<GetMealById, MealDto>
+    public class GetMealByIdHandler : IRequestHandler<GetMealById, Meal>
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
@@ -22,7 +23,7 @@ namespace LifeStyle.Application.Meals.Query
             Log.Information("GetMealByIdHandler instance created.");
         }
 
-        public async Task<MealDto> Handle(GetMealById request, CancellationToken cancellationToken)
+        public async Task<Meal> Handle(GetMealById request, CancellationToken cancellationToken)
         {
             Log.Information("Handling GetMealByIdHandler command for Meal ID {MealId}...", request.MealId);
             try
@@ -34,7 +35,7 @@ namespace LifeStyle.Application.Meals.Query
                     throw new NotFoundException($"Meal with ID {request.MealId} not found");
                 }
 
-                return _mapper.Map<MealDto>(meal);
+                return meal;
 
             }
             catch(NotFoundException ex) 

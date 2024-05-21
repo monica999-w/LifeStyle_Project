@@ -15,18 +15,6 @@ namespace LifeStyle.Application.Responses
         public int DurationInMinutes { get; set; }
         [EnumDataType(typeof(ExerciseType))]
         public  ExerciseType Type { get; set; }
-
-        public static ExerciseDto FromExercise(Exercise exercise)
-        {
-            return new ExerciseDto
-            {
-                Id = exercise.ExerciseId,
-                Name = exercise.Name,
-                DurationInMinutes = exercise.DurationInMinutes,
-                Type = exercise.Type
-            };
-        }
-
        
     }
 }

@@ -4,29 +4,28 @@ using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Enums;
 using LifeStyle.Domain.Exception;
-
+using LifeStyle.Domain.Models.Exercises;
 using MediatR;
 using Serilog;
 
 
 namespace LifeStyle.Application.Commands
 {
-    public record UpdateExercise(int ExerciseId, string Name, int DurationInMinutes, ExerciseType Type) : IRequest<ExerciseDto>;
+    public record UpdateExercise(int ExerciseId, string Name, int DurationInMinutes, ExerciseType Type) : IRequest<Exercise>;
 
-    public class UpdateExerciseHandler : IRequestHandler<UpdateExercise, ExerciseDto>
+    public class UpdateExerciseHandler : IRequestHandler<UpdateExercise, Exercise>
     {
 
         private readonly IUnitOfWork _unitOfWork;
-        private readonly IMapper _mapper;
+     
 
-        public UpdateExerciseHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public UpdateExerciseHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            _mapper = mapper;
             Log.Information("UpdateExerciseHandler instance created.");
         }
 
-        public async Task<ExerciseDto> Handle(UpdateExercise request, CancellationToken cancellationToken)
+        public async Task<Exercise> Handle(UpdateExercise request, CancellationToken cancellationToken)
         {
             Log.Information("Handling UpdateExercise command...");
 
@@ -55,8 +54,7 @@ namespace LifeStyle.Application.Commands
 
                 Log.Information("Exercise updated successfully: ID={ExerciseId}", request.ExerciseId);
 
-                var updatedExerciseDto = _mapper.Map<ExerciseDto>(exercise);
-                return updatedExerciseDto;
+                return exercise;
             }
             catch (NotFoundException ex)
             {
