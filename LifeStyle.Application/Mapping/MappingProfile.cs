@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using LifeStyle.Application.Auth;
 using LifeStyle.Application.Commands;
 using LifeStyle.Application.Planners.Commands;
 using LifeStyle.Application.Planners.Responses;
@@ -52,6 +53,13 @@ namespace LifeStyle.Application.Mapping
                 opt => opt.MapFrom(src => src.ProfileId)
                 );
             CreateMap<UserDto,UserProfile>();
+
+            //CreateMap<RegisterDto, UserProfile>()
+            //    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
+            //CreateMap<UserProfile, RegisterDto>();
+
+            //CreateMap<LoginDto, UserProfile>();
+
         }
     }
 }

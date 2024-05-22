@@ -6,7 +6,7 @@ using LifeStyle.Application.Query;
 using LifeStyle.Domain.Exception;
 using LifeStyle.Application.Responses;
 using AutoMapper;
-using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authorization;
 
 
 
@@ -26,6 +26,7 @@ namespace LifeStyle.Controllers
             _mapper = mapper;
         }
 
+        [AllowAnonymous]
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ExerciseDto>>> GetAllExercises()
         {
@@ -41,6 +42,7 @@ namespace LifeStyle.Controllers
             }
         }
 
+        [AllowAnonymous]
         [HttpGet("{exerciseId}")]
         public async Task<ActionResult> GetExerciseById(int exerciseId)
         {
@@ -60,7 +62,7 @@ namespace LifeStyle.Controllers
             }
         }
 
-
+        [Authorize(Roles = "b302276b-b2e0-4002-8240-3b13d03b2cd5")]
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] ExerciseDto exerciseDto)
         {
@@ -83,6 +85,7 @@ namespace LifeStyle.Controllers
 
 
         [HttpDelete("{exerciseId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Delete(int exerciseId)
         {
             try
@@ -100,6 +103,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPut("{exerciseId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Update(int exerciseId, [FromBody]ExerciseDto updateExercise)
         {
             try

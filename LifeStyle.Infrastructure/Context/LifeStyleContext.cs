@@ -1,17 +1,16 @@
-﻿
-
-using LifeStyle.Domain.Enums;
-using LifeStyle.Domain.Models.Exercises;
+﻿using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Domain.Models.Users;
 using LifeStyle.Infrastructure.EntityConfigurations;
 using LifeStyle.Models.Planner;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+
 
 namespace LifeStyle.Infrastructure.Context
 {
-    public class LifeStyleContext : DbContext
+    public class LifeStyleContext : IdentityDbContext<IdentityUser>
     {
         public LifeStyleContext(DbContextOptions options) : base(options) { }
 
@@ -27,12 +26,15 @@ namespace LifeStyle.Infrastructure.Context
         {
            modelBuilder.ApplyConfiguration(new PlannerEntityTypeConfiguration());
            modelBuilder.ApplyConfiguration(new ExerciseEntityTypeConfiguration());
-
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Meal>()
-                .Property(m => m.MealId)
-                .ValueGeneratedOnAdd();
+        //   modelBuilder.Entity<UserProfile>(b =>
+        //{
+          
+        //    b.HasKey(u => u.Id);
+           
+        //});
+
         }
     }
 }

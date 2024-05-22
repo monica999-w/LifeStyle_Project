@@ -6,6 +6,7 @@ using LifeStyle.Application.Users.Commands;
 using LifeStyle.Application.Users.Query;
 using LifeStyle.Domain.Exception;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -13,6 +14,7 @@ namespace LifeStyle.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+
     public class UsersController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -25,6 +27,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,User")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
         {
             try
@@ -41,6 +44,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpGet("{userId}")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<ActionResult> GetUserById(int userId)
         {
             try
@@ -57,6 +61,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPost]
+         [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> CreateUser([FromBody] UserDto userDto)
         {
             try
@@ -73,6 +78,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpDelete("{userId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteUser(int userId)
         {
             try
@@ -90,6 +96,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPut("{userId}")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> UpdateUser(int userId, [FromBody]UserDto updateUser)
         {
             try

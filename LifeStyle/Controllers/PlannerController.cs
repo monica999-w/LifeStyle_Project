@@ -9,6 +9,7 @@ using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Domain.Models.Users;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.TeamFoundation.Work.WebApi;
 
@@ -18,6 +19,7 @@ namespace LifeStyle.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class PlannerController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -30,6 +32,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,User")]
         public async Task<ActionResult<IEnumerable<PlannerDto>>> GetAllPlanners()
         {
             try
@@ -46,6 +49,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreatePlanner([FromBody] PlannerDto plannerDto)
         {
             try
@@ -78,6 +82,7 @@ namespace LifeStyle.Controllers
 
 
         [HttpDelete("{plannerId}")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> DeletePlanner(int plannerId)
         {
             try
@@ -97,6 +102,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPut]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> UpdatePlanner([FromBody] PlannerDto plannerDto)
         {
             try

@@ -5,6 +5,7 @@ using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Meal;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -13,6 +14,7 @@ namespace LifeStyle.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class MealController : ControllerBase
     {
         private readonly IMediator _mediator;
@@ -25,6 +27,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpGet]
+        [Authorize(Roles = "Admin,User")]
         public async Task<ActionResult<IEnumerable<MealDto>>> GetAllMeals()
         {
             try
@@ -41,6 +44,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpGet("{mealId}")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> GetMealById(int mealId)
         {
             try
@@ -57,6 +61,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> CreateMeal([FromBody] MealDto? mealDto)
         {
             try
@@ -83,6 +88,7 @@ namespace LifeStyle.Controllers
         }
 
          [HttpDelete("{mealId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteMeal(int mealId)
         {
             try
@@ -98,6 +104,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPut("{mealId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> UpdateMeal(int mealId, [FromBody] MealDto mealDto)
         {
             try
