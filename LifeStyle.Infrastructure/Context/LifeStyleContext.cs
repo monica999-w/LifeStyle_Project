@@ -28,12 +28,13 @@ namespace LifeStyle.Infrastructure.Context
            modelBuilder.ApplyConfiguration(new ExerciseEntityTypeConfiguration());
             base.OnModelCreating(modelBuilder);
 
-        //   modelBuilder.Entity<UserProfile>(b =>
-        //{
-          
-        //    b.HasKey(u => u.Id);
-           
-        //});
+
+            // Configurări suplimentare
+            modelBuilder.Entity<UserProfile>()
+                .HasOne(up => up.User)
+                .WithMany()
+                .HasForeignKey(up => up.Email)
+                .HasPrincipalKey(u => u.Email);
 
         }
     }

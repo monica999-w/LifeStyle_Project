@@ -1,10 +1,10 @@
 ﻿using LifeStyle.Application.Options;
-using LifeStyle.Domain.Models.Users;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using LifeStyle.Infrastructure.Context;
+
 
 namespace LifeStyle.Application.Extensions
 {
@@ -38,12 +38,11 @@ namespace LifeStyle.Application.Extensions
                         ValidateAudience = true,
                         ValidAudiences = jwtSettings.Audiences,
                         RequireExpirationTime = false,
-                        ValidateLifetime = true
+                        ValidateLifetime = true,
                     };
 
                     jwt.Audience = jwtSettings.Audiences?[0];
                     jwt.ClaimsIssuer = jwtSettings.Issuer;
-                    
                 });
 
             builder.Services.AddIdentityCore<IdentityUser>(options =>
@@ -55,7 +54,7 @@ namespace LifeStyle.Application.Extensions
                 options.Password.RequireNonAlphanumeric = false;
             })
             .AddRoles<IdentityRole>()
-            .AddSignInManager<SignInManager<IdentityUser>>()
+            .AddSignInManager()
             .AddEntityFrameworkStores<LifeStyleContext>();
             return builder;
         

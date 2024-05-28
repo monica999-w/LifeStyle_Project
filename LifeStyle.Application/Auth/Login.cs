@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace LifeStyle.Application.Auth
 {
-    public class LoginDto
+    public record Login
     {
         [Required(ErrorMessage = "Email is required.")]
         [EmailAddress(ErrorMessage = "Invalid email address.")]

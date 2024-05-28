@@ -3,7 +3,7 @@
 
 namespace LifeStyle.Application.Auth
 {
-    public class RegisterDto
+    public record Register
     {
         [Required(ErrorMessage = "Email is required.")]
         [EmailAddress(ErrorMessage = "Invalid email address.")]
@@ -20,6 +20,7 @@ namespace LifeStyle.Application.Auth
 
         [Phone(ErrorMessage = "Invalid phone number.")]
         public string? PhoneNumber { get; set; }
-        public bool IsAdmin { get; set; } 
+        [Required]
+        public RoleEnum Role { get; set; }
     }
 }

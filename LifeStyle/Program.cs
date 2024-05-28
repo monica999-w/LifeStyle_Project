@@ -14,12 +14,24 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using LifeStyle.Application.Extensions;
 using Serilog;
+using LifeStyle.Application.Auth;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.RegisterAuthentication();
-builder.Services.AddSwagger();
+// Register CORS policy
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigins",
+        builder =>
+        {
+            builder.WithOrigins("http://localhost:5173")
+                   .AllowAnyHeader()
+                   .AllowAnyMethod()
+                   .AllowCredentials(); 
+        });
+});
+
 
 var configuration = builder.Configuration;
 var connectionString = configuration.GetConnectionString("LifeStyleConnection");
@@ -29,6 +41,8 @@ builder.Services.AddDbContext<LifeStyleContext>(
 builder.Services.AddIdentity<IdentityUser, IdentityRole>()
                .AddEntityFrameworkStores<LifeStyleContext>()
                .AddDefaultTokenProviders();
+builder.RegisterAuthentication();
+
 
 builder.Services.AddScoped<IRepository<Exercise>, ExerciseRepository>();
 builder.Services.AddScoped<IRepository<Nutrients>, NutrientRepository>();
@@ -51,25 +65,23 @@ builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
-//// Configurarea Identity
-//builder.Services.AddIdentityCore<UserProfile>(options =>
-//{
-//    options.Password.RequireDigit = false;
-//    options.Password.RequiredLength = 5;
-//    options.Password.RequireUppercase = false;
-//    options.Password.RequireLowercase = false;
-//    options.Password.RequireNonAlphanumeric = false;
-//})
-//.AddRoles<IdentityRole>()
-//.AddSignInManager<SignInManager<UserProfile>>()
-//.AddEntityFrameworkStores<LifeStyleContext>();
-
+builder.Services.AddSwagger();
 
 var app = builder.Build();
 
 
+
+
+app.UseSerilogRequestLogging();
+
+app.UseHttpsRedirection();
+
+app.UseCors("AllowSpecificOrigins");
+
+//app.UseAuthentication();
+app.UseAuthorization();
 // Middleware
-//app.UseMiddleware<ErrorHandlingMiddleware>();
+app.UseMiddleware<ErrorHandlingMiddleware>();
 
 
 // Configure the HTTP request pipeline.
@@ -78,13 +90,19 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-app.UseSerilogRequestLogging();
-
-
-app.UseHttpsRedirection();
-
-app.UseAuthorization();
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        SeedData.Initialize(services).Wait();
+    }
+    catch (Exception ex)
+    {
+        var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "An error occurred seeding the DB.");
+    }
+}
 
 app.MapControllers();
 

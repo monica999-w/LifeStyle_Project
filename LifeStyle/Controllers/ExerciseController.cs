@@ -9,7 +9,6 @@ using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 
 
-
 namespace LifeStyle.Controllers
 {
     [Route("api/[controller]")]
@@ -26,8 +25,8 @@ namespace LifeStyle.Controllers
             _mapper = mapper;
         }
 
-        [AllowAnonymous]
         [HttpGet]
+        [Authorize(Roles ="Admin,User")]
         public async Task<ActionResult<IEnumerable<ExerciseDto>>> GetAllExercises()
         {
             try 
@@ -42,8 +41,9 @@ namespace LifeStyle.Controllers
             }
         }
 
-        [AllowAnonymous]
+       
         [HttpGet("{exerciseId}")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<ActionResult> GetExerciseById(int exerciseId)
         {
             try
@@ -62,8 +62,8 @@ namespace LifeStyle.Controllers
             }
         }
 
-        [Authorize(Roles = "b302276b-b2e0-4002-8240-3b13d03b2cd5")]
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] ExerciseDto exerciseDto)
         {
             try

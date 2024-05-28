@@ -6,9 +6,5 @@ using System.Threading.Tasks;
 
 namespace LifeStyle.Application.Auth
 {
-    public class RoleDto
-    {
-        public string Id { get; set; } = null!;
-
-    }
+    public record AuthResult(string Token);
 }

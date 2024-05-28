@@ -27,7 +27,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles = "Admin,User")]
+      //  [Authorize(Roles = "Admin,User")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
         {
             try
@@ -44,7 +44,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpGet("{userId}")]
-        [Authorize(Roles = "Admin,User")]
+     //   [Authorize(Roles = "Admin,User")]
         public async Task<ActionResult> GetUserById(int userId)
         {
             try
@@ -61,7 +61,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPost]
-         [Authorize(Roles = "Admin,User")]
+      //   [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> CreateUser([FromBody] UserDto userDto)
         {
             try
@@ -96,7 +96,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPut("{userId}")]
-        [Authorize(Roles = "Admin,User")]
+ 
         public async Task<IActionResult> UpdateUser(int userId, [FromBody]UserDto updateUser)
         {
             try
@@ -119,5 +119,7 @@ namespace LifeStyle.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+
     }
 }

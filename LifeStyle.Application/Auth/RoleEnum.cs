@@ -6,13 +6,10 @@ using System.Threading.Tasks;
 
 namespace LifeStyle.Application.Auth
 {
-    public class AuthResultDto
+    public enum RoleEnum
     {
-        public string Token { get; set; }
-
-        public AuthResultDto(string token)
-        {
-            Token = token;
-        }
+        Admin,
+        User
     }
+
 }

@@ -1,7 +1,9 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using LifeStyle.Application.Auth;
 using LifeStyle.Application.Options;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
@@ -54,4 +56,5 @@ namespace LifeStyle.Application.Services
         }
     }
 }
+
 

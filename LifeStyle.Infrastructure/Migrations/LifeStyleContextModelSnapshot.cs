@@ -121,7 +121,13 @@ namespace LifeStyle.Infrastructure.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ProfileId"));
 
+                    b.Property<DateTime?>("BirthDate")
+                        .HasColumnType("datetime2");
+
                     b.Property<string>("Email")
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("Gender")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<double>("Height")
@@ -130,10 +136,19 @@ namespace LifeStyle.Infrastructure.Migrations
                     b.Property<string>("PhoneNumber")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("PhotoUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<double>("Weight")
                         .HasColumnType("float");
 
                     b.HasKey("ProfileId");
+
+                    b.HasIndex("Email");
 
                     b.ToTable("UserProfiles");
                 });
@@ -236,6 +251,7 @@ namespace LifeStyle.Infrastructure.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Email")
+                        .IsRequired()
                         .HasMaxLength(256)
                         .HasColumnType("nvarchar(256)");
 
@@ -391,6 +407,16 @@ namespace LifeStyle.Infrastructure.Migrations
                         .HasForeignKey("NutrientsNutrientId");
 
                     b.Navigation("Nutrients");
+                });
+
+            modelBuilder.Entity("LifeStyle.Domain.Models.Users.UserProfile", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityUser", "User")
+                        .WithMany()
+                        .HasForeignKey("Email")
+                        .HasPrincipalKey("Email");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("LifeStyle.Models.Planner.Planner", b =>

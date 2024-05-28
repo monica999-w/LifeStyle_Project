@@ -1,12 +1,14 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace LifeStyle.Domain.Models.Users
+namespace LifeStyle.Application.Users.Responses
 {
-    public class UserProfile
+    public class UpdateUserProfileDto
     {
-        [Key]
-        public int ProfileId { get; set; }
         [EmailAddress(ErrorMessage = "Invalid email address")]
         public string? Email { get; set; }
 
@@ -19,28 +21,11 @@ namespace LifeStyle.Domain.Models.Users
         [Range(0, double.MaxValue, ErrorMessage = "Weight must be a positive number")]
         public double Weight { get; set; }
 
+        public string? PhotoUrl { get; set; }
+
         [DataType(DataType.Date)]
         public DateTime? BirthDate { get; set; }
 
         public string? Gender { get; set; }
-        public string? PhotoUrl { get; set; }
-
-        public string UserId { get; set; }
-        public IdentityUser User { get; set; }
-
-
-        public UserProfile()
-        {
-        }
-
-        public UserProfile(int id, string email, string phoneNumber, double height, double weight)
-        {
-            ProfileId = id;
-            Email = email;
-            PhoneNumber = phoneNumber;
-            Height = height;
-            Weight = weight;
-        }
     }
-
 }
