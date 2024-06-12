@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using LifeStyle.Domain.Enums;
+using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
 namespace LifeStyle.Domain.Models.Users
@@ -22,7 +23,7 @@ namespace LifeStyle.Domain.Models.Users
         [DataType(DataType.Date)]
         public DateTime? BirthDate { get; set; }
 
-        public string? Gender { get; set; }
+        public Gender Gender { get; set; }
         public string? PhotoUrl { get; set; }
 
         public string UserId { get; set; }

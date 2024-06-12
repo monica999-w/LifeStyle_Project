@@ -6,6 +6,7 @@ using LifeStyle.Models.Planner;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 
 namespace LifeStyle.Infrastructure.Context
@@ -26,6 +27,7 @@ namespace LifeStyle.Infrastructure.Context
         {
            modelBuilder.ApplyConfiguration(new PlannerEntityTypeConfiguration());
            modelBuilder.ApplyConfiguration(new ExerciseEntityTypeConfiguration());
+            modelBuilder.ApplyConfiguration(new UserEntityTypeConfiguration());
             base.OnModelCreating(modelBuilder);
 
 

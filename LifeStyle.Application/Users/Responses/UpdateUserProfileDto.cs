@@ -1,4 +1,6 @@
-﻿using System;
+﻿using LifeStyle.Domain.Enums;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -21,11 +23,11 @@ namespace LifeStyle.Application.Users.Responses
         [Range(0, double.MaxValue, ErrorMessage = "Weight must be a positive number")]
         public double Weight { get; set; }
 
-        public string? PhotoUrl { get; set; }
+        public IFormFile? PhotoUrl { get; set; }
 
         [DataType(DataType.Date)]
         public DateTime? BirthDate { get; set; }
 
-        public string? Gender { get; set; }
+        public Gender Gender { get; set; }
     }
 }

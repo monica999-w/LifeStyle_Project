@@ -50,7 +50,8 @@ builder.Services.AddScoped<IRepository<Meal>, MealRepository>();
 builder.Services.AddScoped<IRepository<UserProfile>, UserRepository>();
 builder.Services.AddScoped<IPlannerRepository, PlannerRepository>();
 builder.Services.AddScoped<IdentityService>();
-
+builder.Services.AddScoped<IFileService, FileService>();
+builder.Services.AddScoped<SeedDataService>();
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(CreateExercise).Assembly));
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -66,6 +67,7 @@ builder.Host.UseSerilog((context, configuration) =>
     configuration.ReadFrom.Configuration(context.Configuration));
 
 builder.Services.AddSwagger();
+builder.Services.Configure<FileService>(builder.Configuration.GetSection("UploadPath"));
 
 var app = builder.Build();
 
@@ -75,6 +77,7 @@ var app = builder.Build();
 app.UseSerilogRequestLogging();
 
 app.UseHttpsRedirection();
+
 
 app.UseCors("AllowSpecificOrigins");
 
@@ -90,19 +93,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    try
-    {
-        SeedData.Initialize(services).Wait();
-    }
-    catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred seeding the DB.");
-    }
+    var seedService = services.GetRequiredService<SeedDataService>();
+    await seedService.SeedAdminUserAsync();
 }
+app.UseStaticFiles();
 
 app.MapControllers();
 

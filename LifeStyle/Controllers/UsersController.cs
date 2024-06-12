@@ -27,7 +27,7 @@ namespace LifeStyle.Controllers
         }
 
         [HttpGet]
-      //  [Authorize(Roles = "Admin,User")]
+       [Authorize(Roles = "Admin")]
         public async Task<ActionResult<IEnumerable<UserDto>>> GetAllUsers()
         {
             try

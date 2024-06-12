@@ -4,9 +4,12 @@ using LifeStyle.Domain;
 using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
+using LifeStyle.Domain.Models.Exercises;
+using LifeStyle.Application.Exercises.Responses;
 
 namespace LifeStyle.Aplication.Logic
 {
+
     public class MealRepository : IRepository<Meal>
     {
 
@@ -26,6 +29,7 @@ namespace LifeStyle.Aplication.Logic
                   .Include(meal => meal.Nutrients)
                   .ToListAsync();
         }
+
 
         public async Task<Meal> Add(Meal entity)
         {
@@ -55,7 +59,7 @@ namespace LifeStyle.Aplication.Logic
             if (existingMeal != null)
             {
 
-                existingMeal.Name = entity.Name;
+                existingMeal.MealName = entity.MealName;
                 existingMeal.MealType = entity.MealType;
                 existingMeal.Nutrients = entity.Nutrients;
                
@@ -92,9 +96,12 @@ namespace LifeStyle.Aplication.Logic
         public async Task<Meal> GetByName(string name)
         {
             var meal = await _lifeStyleContext.Meals
-                .FirstOrDefaultAsync(e => e.Name == name);
+                .FirstOrDefaultAsync(e => e.MealName == name);
 
             return meal;
         }
+
+
+        
     }
 }

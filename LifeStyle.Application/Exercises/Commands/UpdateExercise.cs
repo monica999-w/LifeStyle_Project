@@ -11,7 +11,7 @@ using Serilog;
 
 namespace LifeStyle.Application.Commands
 {
-    public record UpdateExercise(int ExerciseId, string Name, int DurationInMinutes, ExerciseType Type) : IRequest<Exercise>;
+    public record UpdateExercise(int ExerciseId, string Name, int DurationInMinutes, string Description, string VideoLink, ExerciseType Type, Equipment Equipment, MajorMuscle MajorMuscle) : IRequest<Exercise>;
 
     public class UpdateExerciseHandler : IRequestHandler<UpdateExercise, Exercise>
     {
@@ -42,6 +42,10 @@ namespace LifeStyle.Application.Commands
                 exercise.Name = request.Name;
                 exercise.DurationInMinutes = request.DurationInMinutes;
                 exercise.Type = request.Type;
+                exercise.VideoLink=request.VideoLink;
+                exercise.Equipment = request.Equipment;
+                exercise.Description = request.Description;
+                exercise.MajorMuscle = request.MajorMuscle;
 
                 Log.Information("Starting transaction...");
                 await _unitOfWork.BeginTransactionAsync();

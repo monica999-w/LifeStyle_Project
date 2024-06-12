@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
-using LifeStyle.Application.Auth;
-using LifeStyle.Application.Commands;
-using LifeStyle.Application.Planners.Commands;
 using LifeStyle.Application.Planners.Responses;
 using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
+using LifeStyle.Domain.Models.Paged;
 using LifeStyle.Domain.Models.Users;
 using LifeStyle.Models.Planner;
 
@@ -23,15 +21,14 @@ namespace LifeStyle.Application.Mapping
                 opt => opt.MapFrom(src => src.ExerciseId)
                 );
             CreateMap<ExerciseDto, Exercise>();
-          
 
-            //meal
+
+            // meal
             CreateMap<Meal, MealDto>()
-                .ForMember(
-                dest => dest.Id,
-                opt => opt.MapFrom(src => src.MealId)
-                );
+              .ForMember(dest => dest.ImageUrl, opt => opt.MapFrom(src => src.Image));
             CreateMap<MealDto, Meal>();
+
+
 
             //nutrient
             CreateMap<Nutrients, NutrientDto>();
@@ -53,12 +50,6 @@ namespace LifeStyle.Application.Mapping
                 opt => opt.MapFrom(src => src.ProfileId)
                 );
             CreateMap<UserDto,UserProfile>();
-
-            //CreateMap<RegisterDto, UserProfile>()
-            //    .ForMember(dest => dest.Email, opt => opt.MapFrom(src => src.Email));
-            //CreateMap<UserProfile, RegisterDto>();
-
-            //CreateMap<LoginDto, UserProfile>();
 
         }
     }

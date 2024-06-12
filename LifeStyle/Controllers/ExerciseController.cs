@@ -7,6 +7,9 @@ using LifeStyle.Domain.Exception;
 using LifeStyle.Application.Responses;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
+using LifeStyle.Application.Exercises.Responses;
+using LifeStyle.Domain.Models.Paged;
+using LifeStyle.Domain.Models.Exercises;
 
 
 namespace LifeStyle.Controllers
@@ -26,14 +29,13 @@ namespace LifeStyle.Controllers
         }
 
         [HttpGet]
-        [Authorize(Roles ="Admin,User")]
-        public async Task<ActionResult<IEnumerable<ExerciseDto>>> GetAllExercises()
+        [AllowAnonymous]
+        public async Task<ActionResult<PagedResult<ExerciseDto>>> GetAllExercises([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
-            try 
-            { 
-                var result = await _mediator.Send( new GetAllExercise());
-                var mappedResult = _mapper.Map<List<ExerciseDto>>(result);
-                return Ok(mappedResult);
+            try
+            {
+                var result = await _mediator.Send(new GetAllExercise(pageNumber, pageSize));
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -41,7 +43,9 @@ namespace LifeStyle.Controllers
             }
         }
 
-       
+
+
+
         [HttpGet("{exerciseId}")]
         [Authorize(Roles = "Admin,User")]
         public async Task<ActionResult> GetExerciseById(int exerciseId)
@@ -62,6 +66,25 @@ namespace LifeStyle.Controllers
             }
         }
 
+        [HttpGet("filter")]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> FilterExercises([FromBody] ExerciseFilterDto filterDto)
+        {
+            try
+            {
+                var query = new FilterExercisesQuery(filterDto);
+                var exercises = await _mediator.Send(query);
+                var result = _mapper.Map<ExerciseFilterDto>(exercises);
+                return Ok(result);
+            }
+
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An unexpected error occurred while filtering exercises: " + ex.Message);
+            }
+        }
+
+
         [HttpPost]
         [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] ExerciseDto exerciseDto)
@@ -69,7 +92,7 @@ namespace LifeStyle.Controllers
             try
             {
                 var exercise = _mapper.Map<ExerciseDto>(exerciseDto);
-                var command = new CreateExercise(exercise.Name, exercise.DurationInMinutes, exercise.Type);
+                var command = new CreateExercise(exercise.Name, exercise.DurationInMinutes,exercise.Description,exercise.VideoLink, exercise.Type, exercise.Equipment, exercise.MajorMuscle);
                 var result = await _mediator.Send(command);
                 return Ok(result);
             }
@@ -108,7 +131,7 @@ namespace LifeStyle.Controllers
         {
             try
             {
-                var command = new UpdateExercise(updateExercise.Id,updateExercise.Name, updateExercise.DurationInMinutes, updateExercise.Type);
+                var command = new UpdateExercise(updateExercise.Id,updateExercise.Name, updateExercise.DurationInMinutes,updateExercise.Description,updateExercise.VideoLink, updateExercise.Type,updateExercise.Equipment,updateExercise.MajorMuscle);
 
                 if (exerciseId != command.ExerciseId)
                 {

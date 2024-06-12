@@ -2,8 +2,10 @@
 using LifeStyle.Application.Commands;
 using LifeStyle.Application.Meals.Query;
 using LifeStyle.Application.Responses;
+using LifeStyle.Application.Services;
 using LifeStyle.Domain.Exception;
 using LifeStyle.Domain.Models.Meal;
+using LifeStyle.Domain.Models.Paged;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,28 +16,27 @@ namespace LifeStyle.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
     public class MealController : ControllerBase
     {
         private readonly IMediator _mediator;
         private readonly IMapper _mapper;
+        private readonly IFileService _fileService;
 
-        public MealController(IMediator mediator,IMapper mapper)
+        public MealController(IMediator mediator,IMapper mapper, IFileService fileService)
         {
             _mediator = mediator;
             _mapper = mapper;
+            _fileService = fileService;
         }
 
         [HttpGet]
-      //  [Authorize(Roles = "Admin,User")]
-        public async Task<ActionResult<IEnumerable<MealDto>>> GetAllMeals()
+        [AllowAnonymous]
+        public async Task<ActionResult<PagedResult<MealDto>>> GetAllMeals([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 10)
         {
             try
             {
-                var request = new GetAllMeals();
-                var result = await _mediator.Send(request);
-                var mappedResult = _mapper.Map<List<MealDto>>(result);
-                return Ok(mappedResult);
+                var result = await _mediator.Send(new GetAllMeals(pageNumber, pageSize));
+                return Ok(result);
             }
             catch (Exception ex)
             {
@@ -43,8 +44,9 @@ namespace LifeStyle.Controllers
             }
         }
 
+
         [HttpGet("{mealId}")]
-      //  [Authorize(Roles = "Admin,User")]
+        [AllowAnonymous]
         public async Task<IActionResult> GetMealById(int mealId)
         {
             try
@@ -61,34 +63,51 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPost]
-      //  [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> CreateMeal([FromBody] MealDto? mealDto)
+        [AllowAnonymous]
+        public async Task<IActionResult> CreateMeal([FromForm] MealDto mealDto)
         {
             try
             {
+                var createMealDto = _mapper.Map<MealDto>(mealDto);
+                var nutrients = new Nutrients
+                {
+                    Calories = createMealDto.Nutrients.Calories,
+                    Protein = createMealDto.Nutrients.Protein,
+                    Carbohydrates = createMealDto.Nutrients.Carbohydrates,
+                    Fat = createMealDto.Nutrients.Fat
+                };
+
                 var command = new CreateMeal(
-                    mealDto.Name,
-                    mealDto.MealType,
-                    mealDto.Nutrients
+                    createMealDto.MealName,
+                    createMealDto.MealType,
+                    nutrients,
+                    createMealDto.Ingredients,
+                    createMealDto.PreparationInstructions,
+                    createMealDto.EstimatedPreparationTimeInMinutes,
+                    createMealDto.Allergies,
+                    createMealDto.Diets,
+                    createMealDto.ImageUrl
                 );
 
                 var result = await _mediator.Send(command);
-                var mappedResult = _mapper.Map<MealDto>(result);
 
-                return Ok(mappedResult);
+                return Ok( result);
             }
+
             catch (ValidationException ex)
             {
                 return BadRequest(ex.Message);
             }
-            catch (AlreadyExistsException ex)
+            catch (Exception ex)
             {
-                return Conflict(ex.Message);
+                return StatusCode(500, $"An unexpected error occurred while creating the meal: {ex.Message}");
             }
         }
 
-         [HttpDelete("{mealId}")]
-       // [Authorize(Roles = "Admin")]
+
+
+        [HttpDelete("{mealId}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> DeleteMeal(int mealId)
         {
             try
@@ -103,45 +122,48 @@ namespace LifeStyle.Controllers
             }
         }
 
-        [HttpPut("{mealId}")]
-        //[Authorize(Roles = "Admin")]
-        public async Task<IActionResult> UpdateMeal(int mealId, [FromBody] MealDto mealDto)
+        [HttpPut("{id}")]
+        [Authorize(Roles = "Admin")]
+        public async Task<IActionResult> UpdateMeal(int id, [FromForm] MealDto mealDto, [FromForm] IFormFile image)
         {
             try
             {
-                if (mealDto == null || mealId != mealDto.Id)
+                var updateMealDto = _mapper.Map<MealDto>(mealDto);
+                var nutrients = new Nutrients
                 {
-                    return BadRequest("Invalid meal data or mealId in the path does not match mealId in the data.");
-                }
+                    Calories = updateMealDto.Nutrients.Calories,
+                    Protein = updateMealDto.Nutrients.Protein,
+                    Carbohydrates = updateMealDto.Nutrients.Carbohydrates,
+                    Fat = updateMealDto.Nutrients.Fat
+                };
 
-                // Actualizăm meal-ul
                 var command = new UpdateMeal(
-                    mealId,
-                    mealDto.Name,
-                    mealDto.MealType,
-                    _mapper.Map<Nutrients>(mealDto.Nutrients)
+                    id,
+                    updateMealDto.MealName,
+                    updateMealDto.MealType,
+                    nutrients,
+                    updateMealDto.Ingredients,
+                    updateMealDto.PreparationInstructions,
+                    updateMealDto.EstimatedPreparationTimeInMinutes,
+                    image,
+                    updateMealDto.Allergies,
+                    updateMealDto.Diets
                 );
 
-                var updatedMeal = await _mediator.Send(command);
+                var result = await _mediator.Send(command);
 
-                if (updatedMeal != null)
-                {
-                    var mappedResult = _mapper.Map<MealDto>(updatedMeal);
-                    return Ok(mappedResult);
-                }
-                else
-                {
-                    return NotFound($"Meal with ID {mealId} not found.");
-                }
+                return Ok(result);
             }
-            catch (NotFoundException ex)
+            catch (ValidationException ex)
             {
-                return NotFound(ex.Message);
+                return BadRequest(ex.Message);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, $"Failed to update meal: {ex.Message}");
+                return StatusCode(500, $"An unexpected error occurred while updating the meal: {ex.Message}");
             }
         }
+
+
     }
 }

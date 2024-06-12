@@ -11,7 +11,7 @@ using Serilog;
 
 namespace LifeStyle.Application.Commands
 {
-    public record CreateExercise(string Name, int DurationInMinutes, ExerciseType Type) : IRequest<Exercise>;
+    public record CreateExercise(string Name, int DurationInMinutes, string Description,string VideoLink, ExerciseType Type,Equipment Equipment,MajorMuscle MajorMuscle) : IRequest<Exercise>;
 
     public class CreateExerciseHandler : IRequestHandler<CreateExercise, Exercise>
     {
@@ -42,7 +42,11 @@ namespace LifeStyle.Application.Commands
                 {
                     Name = request.Name,
                     DurationInMinutes = request.DurationInMinutes,
-                    Type = request.Type
+                    Description=request.Description,
+                    VideoLink=request.VideoLink,
+                    Type = request.Type,
+                    Equipment = request.Equipment,
+                    MajorMuscle = request.MajorMuscle
                 };
 
 

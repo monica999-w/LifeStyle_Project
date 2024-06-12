@@ -1,4 +1,6 @@
-﻿using LifeStyle.Domain.Models.Exercises;
+﻿using LifeStyle.Application.Exercises.Responses;
+using LifeStyle.Domain.Models.Exercises;
+using System.Linq.Expressions;
 
 namespace LifeStyle.Aplication.Interfaces
 {
@@ -11,6 +13,7 @@ namespace LifeStyle.Aplication.Interfaces
         Task<T?> GetById(int id);
         int GetLastId();
         Task<T> GetByName(string name);
+        Task<IEnumerable<T>> Find(Expression<Func<T, bool>> predicate);
     }
 
 }

@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Application.Exercises.Responses;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Users;
 using LifeStyle.Infrastructure.Context;
@@ -98,5 +99,6 @@ namespace LifeStyle.Aplication.Logic
 
             return user;
         }
+
     }
 }

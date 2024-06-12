@@ -1,9 +1,9 @@
 ﻿using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Application.Exercises.Responses;
 using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
-
 
 namespace LifeStyle.Infrastructure.Repository
 {
@@ -91,5 +91,7 @@ namespace LifeStyle.Infrastructure.Repository
         {
             throw new NotImplementedException();
         }
+
+      
     }
 }

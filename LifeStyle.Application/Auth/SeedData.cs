@@ -1,43 +1,54 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
+using System.Security.Claims;
 
 
 namespace LifeStyle.Application.Auth
 {
-    public class SeedData
+    public class SeedDataService
     {
-        public static async Task Initialize(IServiceProvider serviceProvider)
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
+
+        public SeedDataService(UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager)
         {
-            var roleManager = serviceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-            var roleNames = Enum.GetNames(typeof(RoleEnum));
-            IdentityResult roleResult;
+            _userManager = userManager;
+            _roleManager = roleManager;
+        }
 
-            foreach (var roleName in roleNames)
+        public async Task SeedAdminUserAsync()
+        {
+            const string adminEmail = "admin@admin.com";
+            const string adminPassword = "Admin@123";
+
+            if (await _userManager.FindByEmailAsync(adminEmail) == null)
             {
-                var roleExist = await roleManager.RoleExistsAsync(roleName);
-                if (!roleExist)
+                var adminUser = new IdentityUser
                 {
-                    roleResult = await roleManager.CreateAsync(new IdentityRole(roleName));
-                }
-            }
+                    Email = adminEmail,
+                    UserName = adminEmail,
+                    EmailConfirmed = true
+                };
 
-            var userManager = serviceProvider.GetRequiredService<UserManager<IdentityUser>>();
-            var user = new IdentityUser
-            {
-                UserName = "admin@admin.com",
-                Email = "admin@admin.com"
-            };
-
-            string adminPassword = "Admin@123";
-
-            var _user = await userManager.FindByEmailAsync("admin@admin.com");
-
-            if (_user == null)
-            {
-                var createAdminUser = await userManager.CreateAsync(user, adminPassword);
-                if (createAdminUser.Succeeded)
+                var result = await _userManager.CreateAsync(adminUser, adminPassword);
+                if (result.Succeeded)
                 {
-                    await userManager.AddToRoleAsync(user, RoleEnum.Admin.ToString());
+                    var adminRole = await _roleManager.FindByNameAsync("Admin");
+                    if (adminRole == null)
+                    {
+                        adminRole = new IdentityRole("Admin");
+                        await _roleManager.CreateAsync(adminRole);
+                    }
+
+                    await _userManager.AddToRoleAsync(adminUser, "Admin");
+
+                    var adminClaims = new List<Claim>
+                {
+                    new(ClaimTypes.Email, adminEmail),
+                    new(ClaimTypes.Role, "Admin")
+                };
+
+                    await _userManager.AddClaimsAsync(adminUser, adminClaims);
                 }
             }
         }

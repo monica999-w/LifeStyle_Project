@@ -1,39 +1,36 @@
 ﻿using AutoMapper;
 using LifeStyle.Application.Abstractions;
+using LifeStyle.Application.Responses;
 using LifeStyle.Domain.Models.Exercises;
+using LifeStyle.Domain.Models.Paged;
 using MediatR;
-using Serilog;
 
 
 namespace LifeStyle.Application.Exercises.Query
 {
-    public record GetAllExercise : IRequest<List<Exercise>>;
-    public class GetAllExercisesHandler : IRequestHandler<GetAllExercise, List<Exercise>>
+    public record GetAllExercise(int PageNumber, int PageSize) : IRequest<PagedResult<ExerciseDto>>;
+
+    public class GetAllExercisesHandler : IRequestHandler<GetAllExercise, PagedResult<ExerciseDto>>
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IMapper _mapper;
 
-
-        public GetAllExercisesHandler(IUnitOfWork unitOfWork)
+        public GetAllExercisesHandler(IUnitOfWork unitOfWork, IMapper mapper)
         {
             _unitOfWork = unitOfWork;
-            Log.Information("GetAllExercisesHandler instance created.");
+            _mapper = mapper;
         }
 
-        public async Task<List<Exercise>> Handle(GetAllExercise request, CancellationToken cancellationToken)
+        public async Task<PagedResult<ExerciseDto>> Handle(GetAllExercise request, CancellationToken cancellationToken)
         {
-            Log.Information("Handling GetAllExercise command...");
+            var exercises = await _unitOfWork.ExerciseRepository.GetAll();
+            var totalCount = exercises.Count();
+            var items = exercises.Skip((request.PageNumber - 1) * request.PageSize)
+                                 .Take(request.PageSize)
+                                 .ToList();
 
-            try
-            {
-                var exercises = await _unitOfWork.ExerciseRepository.GetAll();
-                return exercises;
-
-            }
-            catch (Exception ex)
-            {
-                Log.Error(ex, "Failed to retrieve all exercises");
-                throw new Exception("Failed to retrieve all exercises", ex);
-            }
+            var exerciseDtos = _mapper.Map<List<ExerciseDto>>(items);
+            return new PagedResult<ExerciseDto>(exerciseDtos, totalCount, request.PageNumber, request.PageSize);
         }
     }
 }

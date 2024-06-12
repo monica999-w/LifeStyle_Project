@@ -4,6 +4,8 @@ using LifeStyle.Aplication.Interfaces;
 using LifeStyle.Infrastructure.Context;
 using Microsoft.EntityFrameworkCore;
 using LifeStyle.Domain.Exception;
+using LifeStyle.Application.Exercises.Responses;
+using System.Linq.Expressions;
 
 namespace LifeStyle.Aplication.Logic
 {
@@ -118,6 +120,7 @@ namespace LifeStyle.Aplication.Logic
             }
         }
 
+       
         public int GetLastId()
         {
             try
@@ -128,6 +131,11 @@ namespace LifeStyle.Aplication.Logic
             {
                 throw new Exception("An error occurred while retrieving the last exercise ID.", ex);
             }
+        }
+
+        public async Task<IEnumerable<Exercise>> Find(Expression<Func<Exercise, bool>> predicate)
+        {
+            return await _lifeStyleContext.Set<Exercise>().Where(predicate).ToListAsync();
         }
     }
 }

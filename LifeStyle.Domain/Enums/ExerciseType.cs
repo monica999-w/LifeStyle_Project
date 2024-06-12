@@ -4,15 +4,8 @@
     {
         Yoga,
         Cardio,
-        Weightlifting,
         Pilates,
         CrossFit,
-        Zumba,
-        Hiking,
-        Swimming,
-        Cycling,
-        Running,
-        Aerobics,
-        BodyweightExercises
+        Aerobics
     }
 }

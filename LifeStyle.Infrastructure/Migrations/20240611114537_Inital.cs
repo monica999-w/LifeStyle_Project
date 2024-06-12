@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace LifeStyle.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Auth : Migration
+    public partial class Inital : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -59,7 +59,11 @@ namespace LifeStyle.Infrastructure.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     DurationInMinutes = table.Column<int>(type: "int", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
+                    VideoLink = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Equipment = table.Column<int>(type: "int", nullable: false),
+                    MajorMuscle = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -199,7 +203,7 @@ namespace LifeStyle.Infrastructure.Migrations
                     Height = table.Column<double>(type: "float", nullable: false),
                     Weight = table.Column<double>(type: "float", nullable: false),
                     BirthDate = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PhotoUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
@@ -219,9 +223,15 @@ namespace LifeStyle.Infrastructure.Migrations
                 {
                     MealId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    MealName = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     MealType = table.Column<int>(type: "int", nullable: false),
-                    NutrientsNutrientId = table.Column<int>(type: "int", nullable: true)
+                    NutrientsNutrientId = table.Column<int>(type: "int", nullable: true),
+                    Allergies = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Diets = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Ingredients = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PreparationInstructions = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    EstimatedPreparationTimeInMinutes = table.Column<int>(type: "int", nullable: false),
+                    Image = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -7,10 +7,9 @@ using LifeStyle.Infrastructure.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Services.Users;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+
 
 namespace LifeStyle.ConsolePresentation.Controllers
 {
@@ -24,6 +23,8 @@ namespace LifeStyle.ConsolePresentation.Controllers
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IdentityService _identityService;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IFileService _fileService;
+        private readonly ILogger<AuthController> _logger;
 
 
 
@@ -32,7 +33,9 @@ namespace LifeStyle.ConsolePresentation.Controllers
             RoleManager<IdentityRole> roleManager,
             SignInManager<IdentityUser> signInManager,
             IdentityService identityService,
-            IUnitOfWork unitOfWork)
+            IUnitOfWork unitOfWork,
+            IFileService fileService,
+            ILogger<AuthController> logger)
         {
             _lifeStyleContext = lifeStyleContext;
             _userManager = userManager;
@@ -40,6 +43,8 @@ namespace LifeStyle.ConsolePresentation.Controllers
             _signInManager = signInManager;
             _identityService = identityService;
             _unitOfWork = unitOfWork;
+            _fileService = fileService;
+            _logger = logger;
         }
 
 
@@ -47,8 +52,6 @@ namespace LifeStyle.ConsolePresentation.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Register(Register registerDto)
         {
-
-
             var existingUser = await _userManager.FindByEmailAsync(registerDto.Email);
             if (existingUser != null)
             {
@@ -69,27 +72,34 @@ namespace LifeStyle.ConsolePresentation.Controllers
                 return BadRequest(result.Errors);
             }
 
+            UserProfile userProfile = new()
+            {
+                Email = registerDto.Email,
+                PhoneNumber = registerDto.PhoneNumber,
+                UserId = user.Id
+            };
+            await _lifeStyleContext.UserProfiles.AddAsync(userProfile);
+            await _lifeStyleContext.SaveChangesAsync();
+
             var newClaims = new List<Claim>
-             {
-                 new("Email", registerDto.Email)
-             };
+    {
+        new("Email", registerDto.Email)
+    };
 
             await _userManager.AddClaimsAsync(user, newClaims);
 
-            if (registerDto.Role == RoleEnum.Admin)
+            // Set the role based on the email
+            if (registerDto.Email == "admin@admin.com")
             {
                 var role = await _roleManager.FindByNameAsync("Admin");
                 if (role == null)
                 {
                     role = new IdentityRole("Admin");
                     await _roleManager.CreateAsync(role);
-
                 }
                 await _userManager.AddToRoleAsync(user, "Admin");
-
                 newClaims.Add(new Claim(ClaimTypes.Role, "Admin"));
             }
-
             else
             {
                 var role = await _roleManager.FindByNameAsync("User");
@@ -100,14 +110,12 @@ namespace LifeStyle.ConsolePresentation.Controllers
                 }
                 await _userManager.AddToRoleAsync(user, "User");
                 newClaims.Add(new Claim(ClaimTypes.Role, "User"));
-
             }
-
 
             var claimsIdentity = new ClaimsIdentity(new Claim[]
             {
-                new(JwtRegisteredClaimNames.Sub,user.Email ?? throw new InvalidOperationException()),
-                new(JwtRegisteredClaimNames.Email,user.Email ?? throw new InvalidOperationException()),
+        new(JwtRegisteredClaimNames.Sub, user.Email ?? throw new InvalidOperationException()),
+        new(JwtRegisteredClaimNames.Email, user.Email ?? throw new InvalidOperationException())
             });
 
             claimsIdentity.AddClaims(newClaims);
@@ -117,6 +125,7 @@ namespace LifeStyle.ConsolePresentation.Controllers
 
             return Ok(response);
         }
+
 
 
         [HttpPost("login")]
@@ -161,49 +170,75 @@ namespace LifeStyle.ConsolePresentation.Controllers
         }
 
 
-        [HttpGet("admin")]
-        [Authorize]
-        public IActionResult GetAdminData()
-        {
-            return Ok("This is protected data for Admins only.");
-        }
-
-
-        [HttpGet("user")]
-        [Authorize]
-        public IActionResult GetUserData()
-        {
-            return Ok("This is protected data for Users only.");
-        }
-
-
         [HttpPut("profile")]
         [Authorize]
-        public async Task<IActionResult> UpdateUserProfile(UpdateUserProfileDto updateUserProfileDto)
+        public async Task<IActionResult> UpdateUserProfile([FromForm] UpdateUserProfileDto updateUserProfileDto)
         {
-            var email = User.FindFirstValue(ClaimTypes.Email);
-            if (string.IsNullOrEmpty(email))
+            try
             {
-                return Unauthorized("User not logged in.");
-            }
+                var email = User.FindFirstValue(ClaimTypes.Email);
+                if (string.IsNullOrEmpty(email))
+                {
+                    _logger.LogWarning("User not found with ID: {Email}", email);
+                    return Unauthorized("User not logged in.");
+                }
 
-            var userProfile = await _unitOfWork.UserProfileRepository.GetByName(email);
-            if (userProfile == null)
+                var userProfile = await _unitOfWork.UserProfileRepository.GetByName(email);
+                if (userProfile == null)
+                {
+                    _logger.LogWarning("User profile not found for user with: {Email}", email);
+                    return NotFound("User profile not found.");
+                }
+
+                userProfile.PhoneNumber = updateUserProfileDto.PhoneNumber;
+                userProfile.Height = updateUserProfileDto.Height;
+                userProfile.Weight = updateUserProfileDto.Weight;
+                userProfile.BirthDate = updateUserProfileDto.BirthDate;
+                userProfile.Gender = updateUserProfileDto.Gender;
+
+                if (updateUserProfileDto.PhotoUrl != null)
+                {
+                    userProfile.PhotoUrl = await _fileService.SaveFileAsync(updateUserProfileDto.PhotoUrl, "uploads");
+                }
+
+                await _unitOfWork.UserProfileRepository.Update(userProfile);
+                await _unitOfWork.SaveAsync();
+
+                return Ok(userProfile);
+            }
+            catch (Exception ex)
             {
-                return NotFound("User profile not found.");
+                _logger.LogError(ex, "An error occurred while updating the user profile.");
+                return StatusCode(500, "Internal server error.");
             }
+        }
+        [HttpGet("profile")]
+        [Authorize]
+        public async Task<IActionResult> GetProfile()
+        {
+            try
+            {
+                var email = User.FindFirstValue(ClaimTypes.Email);
+                if (string.IsNullOrEmpty(email))
+                {
+                    _logger.LogWarning("User not found with email: {Email}", email);
+                    return Unauthorized("User not logged in.");
+                }
 
-            userProfile.PhoneNumber = updateUserProfileDto.PhoneNumber;
-            userProfile.Height = updateUserProfileDto.Height;
-            userProfile.Weight = updateUserProfileDto.Weight;
-            userProfile.PhotoUrl = updateUserProfileDto.PhotoUrl;
-            userProfile.BirthDate = updateUserProfileDto.BirthDate;
-            userProfile.Gender = updateUserProfileDto.Gender;
+                var userProfile = await _unitOfWork.UserProfileRepository.GetByName(email);
+                if (userProfile == null)
+                {
+                    _logger.LogWarning("User profile not found for user with email: {Email}", email);
+                    return NotFound("User profile not found.");
+                }
 
-            await _unitOfWork.UserProfileRepository.Update(userProfile);
-            await _unitOfWork.SaveAsync();
-
-            return Ok("Profile updated successfully.");
+                return Ok(userProfile);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching the user profile.");
+                return StatusCode(500, "Internal server error.");
+            }
         }
     }
 }
