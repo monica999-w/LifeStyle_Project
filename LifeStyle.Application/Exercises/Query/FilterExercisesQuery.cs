@@ -1,26 +1,42 @@
-﻿using LifeStyle.Application.Abstractions;
+﻿using LifeStyle.Aplication.Interfaces;
+using LifeStyle.Application.Abstractions;
 using LifeStyle.Application.Exercises.Responses;
 using LifeStyle.Domain.Models.Exercises;
 using MediatR;
 
 namespace LifeStyle.Application.Exercises.Query
 {
-    public record FilterExercisesQuery(Exercise Filter) : IRequest<IEnumerable<Exercise>>;
+    public record FilterExercisesQuery(ExerciseFilterDto Filter) : IRequest<IEnumerable<Exercise>>;
 
     public class FilterExercisesQueryHandler : IRequestHandler<FilterExercisesQuery, IEnumerable<Exercise>>
     {
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IRepository<Exercise> _exerciseRepository;
 
-        public FilterExercisesQueryHandler(IUnitOfWork unitOfWork)
+        public FilterExercisesQueryHandler(IRepository<Exercise> exerciseRepository)
         {
-            _unitOfWork = unitOfWork;
+            _exerciseRepository = exerciseRepository;
         }
 
         public async Task<IEnumerable<Exercise>> Handle(FilterExercisesQuery request, CancellationToken cancellationToken)
         {
-            return await _unitOfWork.ExerciseRepository.Filter(request.Filter);
+            var exercises = await _exerciseRepository.GetAll();
+
+            if (request.Filter.Type.HasValue)
+            {
+                exercises = exercises.Where(e => e.Type == request.Filter.Type.Value).ToList();
+            }
+
+            if (request.Filter.Equipment.HasValue)
+            {
+                exercises = exercises.Where(e => e.Equipment == request.Filter.Equipment.Value).ToList();
+            }
+
+            if (request.Filter.MajorMuscle.HasValue)
+            {
+                exercises = exercises.Where(e => e.MajorMuscle == request.Filter.MajorMuscle.Value).ToList();
+            }
+
+            return exercises;
         }
     }
-
-
 }

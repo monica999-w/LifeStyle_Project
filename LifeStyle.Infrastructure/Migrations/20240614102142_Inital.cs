@@ -61,9 +61,9 @@ namespace LifeStyle.Infrastructure.Migrations
                     DurationInMinutes = table.Column<int>(type: "int", nullable: false),
                     Description = table.Column<string>(type: "nvarchar(500)", maxLength: 500, nullable: false),
                     VideoLink = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Type = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Equipment = table.Column<int>(type: "int", nullable: false),
-                    MajorMuscle = table.Column<int>(type: "int", nullable: false)
+                    Type = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Equipment = table.Column<int>(type: "int", nullable: true),
+                    MajorMuscle = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -249,7 +249,8 @@ namespace LifeStyle.Infrastructure.Migrations
                 {
                     PlannerId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    ProfileId = table.Column<int>(type: "int", nullable: true)
+                    ProfileId = table.Column<int>(type: "int", nullable: true),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {

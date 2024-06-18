@@ -101,7 +101,13 @@ namespace LifeStyle.Aplication.Logic
             return meal;
         }
 
+        public async Task<IEnumerable<Meal>> SearchAsync(string searchTerm)
+        {
+            return await _lifeStyleContext.Meals
+                .Where(m => m.MealName.Contains(searchTerm) || m.Ingredients.Any(i => i.Contains(searchTerm)))
+                .ToListAsync();
+        }
 
-        
+
     }
 }

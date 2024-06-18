@@ -12,6 +12,7 @@ namespace LifeStyle.Models.Planner
         public UserProfile? Profile { get; set; } 
         public ICollection<Meal>? Meals { get; set; }
         public ICollection<Exercise>? Exercises { get; set; }
+        public DateTime Date { get; set; }
 
         public Planner() { }
 

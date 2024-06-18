@@ -16,6 +16,9 @@ namespace LifeStyle.Aplication.Interfaces
 
         Task RemoveMealAsync(Meal meal);
         Task RemoveExerciseAsync(Exercise exercise);
-       
+        Task<UserProfile?> GetByEmail(string email);
+        Task<Planner?> GetByUser(int userId);
+        Task<Planner?> GetPlannerByDate(int userId, DateTime date);
+        Task<IEnumerable<DateTime>> GetAvailablePlannerDates(int userId);
     }
 }

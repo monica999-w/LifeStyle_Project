@@ -9,35 +9,36 @@ using Serilog;
 
 namespace LifeStyle.Application.Planners.Query
 {
-    public record GetPlannersByUser(UserProfile UserProfile) : IRequest<Planner>;
-    public class GetPlannersByUserHandler : IRequestHandler<GetPlannersByUser,Planner>
+    public record GetPlannerByEmailAndDate(string Email, DateTime Date) : IRequest<Planner?>;
+
+    public class GetPlannerByEmailAndDateHandler : IRequestHandler<GetPlannerByEmailAndDate, Planner?>
     {
         private readonly IUnitOfWork _unitOfWork;
-      
 
-        public GetPlannersByUserHandler(IUnitOfWork unitOfWork)
+        public GetPlannerByEmailAndDateHandler(IUnitOfWork unitOfWork)
         {
             _unitOfWork = unitOfWork;
-            Log.Information("GetPlannersByUserHandler instance created.");
-           
+            Log.Information("GetPlannerByEmailAndDateHandler instance created.");
         }
 
-        public async Task<Planner> Handle(GetPlannersByUser request, CancellationToken cancellationToken)
+        public async Task<Planner?> Handle(GetPlannerByEmailAndDate request, CancellationToken cancellationToken)
         {
-            Log.Information("Handling GetPlannersByUser command...");
+            Log.Information("Handling GetPlannerByEmailAndDate command...");
             try
             {
-                var planner = await _unitOfWork.PlannerRepository.GetPlannerByUser(request.UserProfile);
-                if (planner == null)
+                var user = await _unitOfWork.PlannerRepository.GetByEmail(request.Email);
+                if (user == null)
                 {
-                    Log.Warning("No planner found for user {UserId}.", request.UserProfile.ProfileId);
-                    throw new NotFoundException($"Planner not found");
+                    Log.Warning("User with email {Email} not found.", request.Email);
+                    throw new NotFoundException($"User with email {request.Email} not found");
                 }
-                 return planner;
+
+                var planner = await _unitOfWork.PlannerRepository.GetPlannerByDate(user.ProfileId, request.Date.Date);
+                return planner;
             }
             catch (NotFoundException ex)
             {
-                Log.Error(ex, "An error occurred while handling GetPlannersByUser command.");
+                Log.Error(ex, "An error occurred while handling GetPlannerByEmailAndDate command.");
                 throw;
             }
             catch (Exception ex)
@@ -47,6 +48,4 @@ namespace LifeStyle.Application.Planners.Query
             }
         }
     }
-
-
 }

@@ -92,6 +92,9 @@ namespace LifeStyle.Infrastructure.Repository
             throw new NotImplementedException();
         }
 
-      
+        public Task<IEnumerable<Nutrients>> SearchAsync(string searchTerm)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

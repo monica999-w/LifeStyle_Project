@@ -133,9 +133,11 @@ namespace LifeStyle.Aplication.Logic
             }
         }
 
-        public async Task<IEnumerable<Exercise>> Find(Expression<Func<Exercise, bool>> predicate)
+        public async Task<IEnumerable<Exercise>> SearchAsync(string searchTerm)
         {
-            return await _lifeStyleContext.Set<Exercise>().Where(predicate).ToListAsync();
+            return await _lifeStyleContext.Exercises
+               .Where(e => e.Name.Contains(searchTerm) || e.Description.Contains(searchTerm))
+               .ToListAsync();
         }
     }
 }

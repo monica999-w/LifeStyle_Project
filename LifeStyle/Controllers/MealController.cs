@@ -1,9 +1,14 @@
 ﻿using AutoMapper;
+using LifeStyle.Aplication.Logic;
 using LifeStyle.Application.Commands;
+using LifeStyle.Application.Exercises.Query;
+using LifeStyle.Application.Exercises.Responses;
 using LifeStyle.Application.Meals.Query;
+using LifeStyle.Application.Meals.Responses;
 using LifeStyle.Application.Responses;
 using LifeStyle.Application.Services;
 using LifeStyle.Domain.Exception;
+using LifeStyle.Domain.Models.Exercises;
 using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Domain.Models.Paged;
 using MediatR;
@@ -53,14 +58,48 @@ namespace LifeStyle.Controllers
             {
                 var request = new GetMealById(mealId);
                 var result = await _mediator.Send(request);
-                var mappedResult = _mapper.Map<MealDto>(result);
-                return Ok(mappedResult);
+                return Ok(result);
             }
             catch (NotFoundException ex)
             {
                 return NotFound("Meal not found: " + ex.Message);
             }
         }
+
+        [HttpGet("filter")]
+        [Authorize(Roles = "User")]
+        public async Task<ActionResult<IEnumerable<Meal>>> FilterExercises([FromQuery] MealFilterDto filterDto)
+        {
+            try
+            {
+                var query = new FilterMealQuery(filterDto);
+                var meal = await _mediator.Send(query);
+                return Ok(meal);
+            }
+
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An unexpected error occurred while filtering meals: " + ex.Message);
+            }
+        }
+
+        [HttpGet("search")]
+        [Authorize(Roles = "User")]
+        public async Task<ActionResult<IEnumerable<Meal>>> SearchMeals([FromQuery] string searchTerm)
+        {
+            try
+            {
+                var query = new SearchMealsQuery(searchTerm);
+                var meals = await _mediator.Send(query);
+                return Ok(meals);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An unexpected error occurred while search meals: " + ex.Message);
+            }
+        }
+
+
 
         [HttpPost]
         [AllowAnonymous]

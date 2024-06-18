@@ -53,10 +53,10 @@ namespace LifeStyle.Infrastructure.Migrations
                     b.Property<int>("DurationInMinutes")
                         .HasColumnType("int");
 
-                    b.Property<int>("Equipment")
+                    b.Property<int?>("Equipment")
                         .HasColumnType("int");
 
-                    b.Property<int>("MajorMuscle")
+                    b.Property<int?>("MajorMuscle")
                         .HasColumnType("int");
 
                     b.Property<string>("Name")
@@ -65,7 +65,6 @@ namespace LifeStyle.Infrastructure.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Type")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("VideoLink")
@@ -199,6 +198,9 @@ namespace LifeStyle.Infrastructure.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PlannerId"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
 
                     b.Property<int?>("ProfileId")
                         .HasColumnType("int");

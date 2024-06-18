@@ -10,8 +10,9 @@ namespace LifeStyle.Application.Planners.Responses
     public class PlannerDto
     {
         public int PlannerId { get; set; }
-        public int ProfileId { get; set; }
+        public string Profile { get; set; }
         public List<int> MealIds { get; set; }
         public List<int> ExerciseIds { get; set; }
+         public DateTime Date { get; set; }
     }
 }

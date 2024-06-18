@@ -46,10 +46,53 @@ namespace LifeStyle.Aplication.Logic
                 .FirstOrDefaultAsync(p => p.Profile == profile);
             return planner;
         }
+
+        public async Task<UserProfile?> GetByEmail(string email)
+        {
+            try
+            {
+                var user = await _lifeStyleContext.UserProfiles.FirstOrDefaultAsync(u => u.Email == email);
+                return user;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while retrieving the user by email.", ex);
+            }
+        }
+
+        public async Task<Planner?> GetPlannerByDate(int userId, DateTime date)
+        {
+            return await _lifeStyleContext.Planners.Include(p => p.Meals).Include(p => p.Exercises)
+                .FirstOrDefaultAsync(p => p.Profile.ProfileId == userId && p.Date.Date == date.Date);
+        }
+
+        public async Task<IEnumerable<DateTime>> GetAvailablePlannerDates(int userId)
+        {
+            return await _lifeStyleContext.Planners.Where(p => p.Profile.ProfileId == userId).Select(p => p.Date).ToListAsync();
+        }
+
+        public async Task<Planner?> GetByUser(int userId)
+        {
+            try
+            {
+                var planner = await _lifeStyleContext.Planners
+                    .Include(p => p.Meals)
+                    .Include(p => p.Exercises)
+                    .FirstOrDefaultAsync(p => p.Profile.ProfileId == userId);
+                return planner;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An error occurred while retrieving the planner by user.", ex);
+            }
+        }
+
         public async Task<Planner?> GetPlannerById(int id)
         {
 
             var planner = await _lifeStyleContext.Planners
+                .Include(p => p.Meals)
+                .Include(p => p.Exercises)
                 .FirstOrDefaultAsync(e => e.PlannerId == id);
 
             return planner;

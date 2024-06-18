@@ -36,7 +36,7 @@ namespace LifeStyle.Application.Mapping
 
             //planner 
             CreateMap<Planner, PlannerDto>()
-            .ForMember(dest => dest.ProfileId, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.ProfileId : 0))
+            .ForMember(dest => dest.Profile, opt => opt.MapFrom(src => src.Profile != null ? src.Profile.ProfileId : 0))
             .ForMember(dest => dest.MealIds, opt => opt.MapFrom(src => src.Meals != null ? src.Meals.Select(m => m.MealId).ToList() : new List<int>()))
             .ForMember(dest => dest.ExerciseIds, opt => opt.MapFrom(src => src.Exercises != null ? src.Exercises.Select(e => e.ExerciseId).ToList() : new List<int>()));
     

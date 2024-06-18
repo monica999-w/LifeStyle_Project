@@ -1,0 +1,127 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    display: flex;
+    border-radius: 0;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.signin {
+    position: relative;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 120px;
+    background-image: url('../../assets/register.PNG');
+    background-size: cover;
+    background-position: center;
+}
+
+.signin::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(44, 182, 125, 0.7); 
+    z-index: 1;
+}
+
+.signin h2,
+.signin p {
+    position: relative;
+    z-index: 2;
+    color: white;
+    text-align: center;
+}
+
+.signup {
+    background-color: white;
+    flex: 2;
+    padding: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.signup h2 {
+    margin-bottom: 10px;
+    color: #2cb67d;
+}
+
+.signup form {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.signup input {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 25px;
+    font-size: 16px;
+    
+}
+
+.signin-btn {
+    background-color: #2cb67d;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 250px;
+    height: 50px;
+    text-align: center;
+    align-self: center;
+    margin-top: 10px;
+}
+
+.signin-btn:hover {
+    background-color: #28a169;
+}
+
+.signin-link {
+    margin-top: 20px;
+    text-align: center;
+    color: #2cb67d;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.signin-link:hover {
+    text-decoration: underline;
+}
+
+.logout-btn {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    margin: 10px 0;
+    font-size: 16px;
+    color: #fff;
+    background-color: #ff4b4b;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+.logout-btn:hover {
+    background-color: #ff0000;
+}
+
+.sidebar-icon {
+    margin-right: 10px;
+}

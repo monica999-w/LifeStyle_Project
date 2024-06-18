@@ -1,5 +1,7 @@
 ﻿using LifeStyle.Application.Abstractions;
 using LifeStyle.Domain.Exception;
+using LifeStyle.Domain.Models.Exercises;
+using LifeStyle.Domain.Models.Meal;
 using LifeStyle.Models.Planner;
 using MediatR;
 using Serilog;
@@ -7,7 +9,7 @@ using Serilog;
 
 namespace LifeStyle.Application.Planners.Commands
 {
-    public record CreatePlanner(int UserId, List<int> MealIds, List<int> ExerciseIds) : IRequest<Planner>;
+    public record CreatePlanner(string Email, DateTime Date, List<int> MealIds, List<int> ExerciseIds) : IRequest<Planner>;
 
     public class CreatePlannerHandler : IRequestHandler<CreatePlanner, Planner>
     {
@@ -21,20 +23,30 @@ namespace LifeStyle.Application.Planners.Commands
 
         public async Task<Planner> Handle(CreatePlanner request, CancellationToken cancellationToken)
         {
-            Log.Information("Handling CreatePlanner command...");
+            Log.Information("Handling CreateOrUpdatePlanner command...");
             try
             {
-                Log.Information("Creating Planner..");
-                var user = await _unitOfWork.UserProfileRepository.GetById(request.UserId);
+                Log.Information("Creating or updating Planner..");
+                var user = await _unitOfWork.UserProfileRepository.GetByName(request.Email);
                 if (user == null)
                 {
-                    Log.Warning("Planner with User Id not found: ID={UserId}", request.UserId);
-                    throw new NotFoundException($"User with ID {request.UserId} not found");
+                    Log.Warning("Planner with User Email not found: Email={Email}", request.Email);
+                    throw new NotFoundException($"User with Email {request.Email} not found");
                 }
 
-                var planner = new Planner(user);
+                var planner = await _unitOfWork.PlannerRepository.GetPlannerByDate(user.ProfileId, request.Date);
+                if (planner == null)
+                {
+                    planner = new Planner
+                    {
+                        Profile = user,
+                        Date = request.Date,
+                        Meals = new List<Meal>(),
+                        Exercises = new List<Exercise>()
+                    };
+                    await _unitOfWork.PlannerRepository.AddPlanner(planner);
+                }
 
-                // Asocierea meselor
                 foreach (var mealId in request.MealIds)
                 {
                     var meal = await _unitOfWork.MealRepository.GetById(mealId);
@@ -46,7 +58,6 @@ namespace LifeStyle.Application.Planners.Commands
                     planner.AddMeal(meal);
                 }
 
-                // Asocierea exercițiilor
                 foreach (var exerciseId in request.ExerciseIds)
                 {
                     var exercise = await _unitOfWork.ExerciseRepository.GetById(exerciseId);
@@ -61,11 +72,10 @@ namespace LifeStyle.Application.Planners.Commands
                 Log.Information("Starting transaction...");
                 await _unitOfWork.BeginTransactionAsync();
 
-                await _unitOfWork.PlannerRepository.AddPlanner(planner);
                 await _unitOfWork.SaveAsync();
                 Log.Information("Committing transaction...");
                 await _unitOfWork.CommitTransactionAsync();
-                Log.Information("Planner created successfully");
+                Log.Information("Planner created or updated successfully");
 
                 return planner;
             }
@@ -76,9 +86,9 @@ namespace LifeStyle.Application.Planners.Commands
             }
             catch (Exception ex)
             {
-                Log.Error(ex, "Failed to create planner");
+                Log.Error(ex, "Failed to create or update planner");
                 await _unitOfWork.RollbackTransactionAsync();
-                throw new Exception("Failed to create planner", ex);
+                throw new Exception("Failed to create or update planner", ex);
             }
         }
     }

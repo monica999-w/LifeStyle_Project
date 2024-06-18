@@ -100,5 +100,9 @@ namespace LifeStyle.Aplication.Logic
             return user;
         }
 
+        public Task<IEnumerable<UserProfile>> SearchAsync(string searchTerm)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

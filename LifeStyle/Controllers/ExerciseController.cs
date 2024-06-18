@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Authorization;
 using LifeStyle.Application.Exercises.Responses;
 using LifeStyle.Domain.Models.Paged;
 using LifeStyle.Domain.Models.Exercises;
+using LifeStyle.Application.Meals.Query;
+using LifeStyle.Domain.Models.Meal;
 
 
 namespace LifeStyle.Controllers
@@ -68,19 +70,34 @@ namespace LifeStyle.Controllers
 
         [HttpGet("filter")]
         [Authorize(Roles = "User")]
-        public async Task<IActionResult> FilterExercises([FromBody] ExerciseFilterDto filterDto)
+        public async Task<ActionResult<IEnumerable<Exercise>>>  FilterExercises([FromQuery] ExerciseFilterDto filterDto)
         {
             try
             {
                 var query = new FilterExercisesQuery(filterDto);
                 var exercises = await _mediator.Send(query);
-                var result = _mapper.Map<ExerciseFilterDto>(exercises);
-                return Ok(result);
+                return Ok(exercises);
             }
 
             catch (Exception ex)
             {
                 return StatusCode(500, "An unexpected error occurred while filtering exercises: " + ex.Message);
+            }
+        }
+
+        [HttpGet("search")]
+        [Authorize(Roles = "User")]
+        public async Task<ActionResult<IEnumerable<Exercise>>> SearchExercise([FromQuery] string searchTerm)
+        {
+            try
+            {
+                var query = new SearchExerciseQuery(searchTerm);
+                var exercise = await _mediator.Send(query);
+                return Ok(exercise);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "An unexpected error occurred while search exercise: " + ex.Message);
             }
         }
 

@@ -12,6 +12,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.TeamFoundation.Work.WebApi;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 
 
@@ -31,8 +32,43 @@ namespace LifeStyle.Controllers
             _mapper = mapper;
         }
 
+        [HttpGet("user/{email}")]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> GetPlannerByEmailAndDate(string email, [FromQuery] DateTime date)
+        {
+            try
+            {
+                var planner = await _mediator.Send(new GetPlannerByEmailAndDate(email, date));
+                return Ok(planner);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+        [HttpGet("user/{email}/dates")]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> GetAvailablePlannerDates(string email)
+        {
+            try
+            {
+                var dates = await _mediator.Send(new GetAvailablePlannerDates(email));
+                return Ok(dates);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+    
+
         [HttpGet]
-      //  [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<ActionResult<IEnumerable<PlannerDto>>> GetAllPlanners()
         {
             try
@@ -49,24 +85,24 @@ namespace LifeStyle.Controllers
         }
 
         [HttpPost]
-     //   [Authorize(Roles = "Admin")]
+       [Authorize(Roles = "User")]
         public async Task<IActionResult> CreatePlanner([FromBody] PlannerDto plannerDto)
         {
             try
             {
                 var command = new CreatePlanner(
-            plannerDto.ProfileId,
-            plannerDto.MealIds,
-            plannerDto.ExerciseIds
-        );
+                    plannerDto.Profile,
+                    plannerDto.Date,
+                    plannerDto.MealIds,
+                    plannerDto.ExerciseIds );
+            
 
                 var result = await _mediator.Send(command);
 
-                // Construim un nou obiect PlannerDto cu doar ID-urile
                 var mappedResult = new PlannerDto
                 {
                     PlannerId = result.PlannerId,
-                    ProfileId = plannerDto.ProfileId,
+                    Profile = plannerDto.Profile,
                     MealIds = result.Meals?.Select(m => m.MealId).ToList() ?? new List<int>(),
                     ExerciseIds = result.Exercises?.Select(e => e.ExerciseId).ToList() ?? new List<int>()
                 };
@@ -82,7 +118,7 @@ namespace LifeStyle.Controllers
 
 
         [HttpDelete("{plannerId}")]
-     //   [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> DeletePlanner(int plannerId)
         {
             try
@@ -101,8 +137,46 @@ namespace LifeStyle.Controllers
 
         }
 
+        [HttpDelete("{plannerId}/meal/{mealId}")]
+        [Authorize(Roles = "User")]
+        public async Task<IActionResult> RemoveMealFromPlanner(int plannerId, int mealId)
+        {
+            try
+            {
+                var result = await _mediator.Send(new RemoveMealFromPlanner(plannerId, mealId));
+                return Ok(result);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
+        [HttpDelete("{plannerId}/exercise/{exerciseId}")]
+
+        public async Task<IActionResult> RemoveExerciseFromPlanner(int plannerId, int exerciseId)
+        {
+            try
+            {
+                var result = await _mediator.Send(new RemoveExerciseFromPlanner(plannerId, exerciseId));
+                return Ok(result);
+            }
+            catch (NotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, ex.Message);
+            }
+        }
+
         [HttpPut]
-       // [Authorize(Roles = "Admin,User")]
+        [Authorize(Roles = "Admin,User")]
         public async Task<IActionResult> UpdatePlanner([FromBody] PlannerDto plannerDto)
         {
             try
