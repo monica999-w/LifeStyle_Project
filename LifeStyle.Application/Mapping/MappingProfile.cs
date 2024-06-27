@@ -31,8 +31,8 @@ namespace LifeStyle.Application.Mapping
 
 
             //nutrient
-            CreateMap<Nutrients, NutrientDto>();
-            CreateMap<NutrientDto,Nutrients>();
+            CreateMap<Nutrients, Nutrient>();
+            CreateMap<Nutrient,Nutrients>();
 
             //planner 
             CreateMap<Planner, PlannerDto>()

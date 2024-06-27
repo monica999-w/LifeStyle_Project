@@ -1,4 +1,5 @@
 ﻿using LifeStyle.Domain.Enums;
+using LifeStyle.Domain.Models.Users;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -18,10 +19,10 @@ namespace LifeStyle.Application.Users.Responses
         public string? PhoneNumber { get; set; }
 
         [Range(0, double.MaxValue, ErrorMessage = "Height must be a positive number")]
-        public double Height { get; set; }
+        public double? Height { get; set; }
 
         [Range(0, double.MaxValue, ErrorMessage = "Weight must be a positive number")]
-        public double Weight { get; set; }
+        public double? Weight { get; set; }
 
         public IFormFile? PhotoUrl { get; set; }
 
@@ -29,5 +30,6 @@ namespace LifeStyle.Application.Users.Responses
         public DateTime? BirthDate { get; set; }
 
         public Gender Gender { get; set; }
+
     }
 }

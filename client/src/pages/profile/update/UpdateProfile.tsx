@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../components/provider/AuthProvider';
 import { TextField, Button, Box, MenuItem, Typography } from '@mui/material';
@@ -14,26 +14,48 @@ const UpdateProfile: React.FC<UpdateProfileProps> = ({ closeModal, refreshProfil
   const { token } = useAuth();
   const { notify } = useNotification();
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [height, setHeight] = useState(0);
-  const [weight, setWeight] = useState(0);
+  const [height, setHeight] = useState<number | null>(null);
+  const [weight, setWeight] = useState<number | null>(null);
   const [birthDate, setBirthDate] = useState('');
-  const [gender, setGender] = useState('Male');
+  const [gender, setGender] = useState('');
   const [photo, setPhoto] = useState<File | null>(null);
   const [error, setError] = useState('');
   const apiUrl = `${environment.apiUrl}Auth/profile`;
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      try {
+        const response = await axios.get(apiUrl, {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+        const { phoneNumber, height, weight, birthDate, gender } = response.data;
+        setPhoneNumber(phoneNumber);
+        setHeight(height);
+        setWeight(weight);
+        // Normalize the birthDate to eliminate timezone differences
+        setBirthDate(new Date(birthDate).toISOString().split('T')[0]);
+        setGender(gender);
+      } catch (error) {
+        setError('Failed to fetch profile data.');
+        notify('Failed to fetch profile data.', 'error');
+      }
+    };
+
+    fetchProfile();
+  }, [apiUrl, token, notify]);
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
     const profileDto = new FormData();
-    profileDto.append('phoneNumber', phoneNumber);
-    profileDto.append('height', height.toString());
-    profileDto.append('weight', weight.toString());
-    profileDto.append('birthDate', birthDate);
-    profileDto.append('gender', gender);
-    if (photo) {
-      profileDto.append('photo', photo);
-    }
+    if (phoneNumber) profileDto.append('phoneNumber', phoneNumber);
+    if (height !== null) profileDto.append('height', height.toString());
+    if (weight !== null) profileDto.append('weight', weight.toString());
+    if (birthDate) profileDto.append('birthDate', new Date(birthDate).toISOString());
+    if (gender) profileDto.append('gender', gender);
+    if (photo) profileDto.append('photoUrl', photo);
 
     try {
       await axios.put(apiUrl, profileDto, {
@@ -52,8 +74,23 @@ const UpdateProfile: React.FC<UpdateProfileProps> = ({ closeModal, refreshProfil
   };
 
   return (
-    <Box className="container" sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <Typography variant="h5" component="h2">Update Profile</Typography>
+    <Box
+      className="container"
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        padding: 3,
+        backgroundColor: '#f7f7f7',
+        borderRadius: 2,
+        boxShadow: 1,
+        maxWidth: 500,
+        margin: '0 auto'
+      }}
+    >
+      <Typography variant="h5" component="h2" sx={{ marginBottom: 2 }}>
+        Update Profile
+      </Typography>
       <form onSubmit={handleSubmit} style={{ width: '100%' }}>
         <TextField
           fullWidth
@@ -63,7 +100,6 @@ const UpdateProfile: React.FC<UpdateProfileProps> = ({ closeModal, refreshProfil
           label="Phone Number"
           value={phoneNumber}
           onChange={(e) => setPhoneNumber(e.target.value)}
-          required
         />
         <TextField
           fullWidth
@@ -71,9 +107,8 @@ const UpdateProfile: React.FC<UpdateProfileProps> = ({ closeModal, refreshProfil
           type="number"
           name="height"
           label="Height"
-          value={height}
+          value={height !== null ? height : ''}
           onChange={(e) => setHeight(parseFloat(e.target.value))}
-          required
         />
         <TextField
           fullWidth
@@ -81,9 +116,8 @@ const UpdateProfile: React.FC<UpdateProfileProps> = ({ closeModal, refreshProfil
           type="number"
           name="weight"
           label="Weight"
-          value={weight}
+          value={weight !== null ? weight : ''}
           onChange={(e) => setWeight(parseFloat(e.target.value))}
-          required
         />
         <TextField
           fullWidth
@@ -93,7 +127,6 @@ const UpdateProfile: React.FC<UpdateProfileProps> = ({ closeModal, refreshProfil
           label="Birth Date"
           value={birthDate}
           onChange={(e) => setBirthDate(e.target.value)}
-          required
           InputLabelProps={{ shrink: true }}
         />
         <TextField
@@ -104,7 +137,6 @@ const UpdateProfile: React.FC<UpdateProfileProps> = ({ closeModal, refreshProfil
           label="Gender"
           value={gender}
           onChange={(e) => setGender(e.target.value)}
-          required
         >
           <MenuItem value="Male">Male</MenuItem>
           <MenuItem value="Female">Female</MenuItem>
@@ -113,6 +145,7 @@ const UpdateProfile: React.FC<UpdateProfileProps> = ({ closeModal, refreshProfil
           variant="contained"
           fullWidth
           component="label"
+          sx={{ marginTop: 2 }}
         >
           Upload Photo
           <input
@@ -121,9 +154,14 @@ const UpdateProfile: React.FC<UpdateProfileProps> = ({ closeModal, refreshProfil
             onChange={(e) => setPhoto(e.target.files ? e.target.files[0] : null)}
           />
         </Button>
-        {error && <Typography color="error">{error}</Typography>}
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 2 }}>
-          <Button type="submit" variant="contained">Update</Button>
+        {error && <Typography color="error" sx={{ marginTop: 2 }}>{error}</Typography>}
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+          <Button type="submit" variant="contained" sx={{ marginRight: 1 }}>
+            Update
+          </Button>
+          <Button variant="outlined" onClick={closeModal}>
+            Cancel
+          </Button>
         </Box>
       </form>
     </Box>

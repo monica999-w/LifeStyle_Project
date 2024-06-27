@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Pagination,Card, CardContent, CardMedia, Typography, Grid, Box, Button, IconButton, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent, TextField, Divider } from '@mui/material';
+import { Pagination, Card, CardContent, CardMedia, Typography, Grid, Box, Button, IconButton, FormControl, InputLabel, Select, MenuItem, SelectChangeEvent, TextField, Divider } from '@mui/material';
 import axios from 'axios';
 import { useAuth } from '../../../components/provider/AuthProvider';
 import { environment } from '../../../environments/environment';
@@ -9,37 +9,10 @@ import SearchIcon from '@mui/icons-material/Search';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 
-
 const mealTypes = [
     { value: 0, label: 'Morning' },
     { value: 1, label: 'Noon' },
     { value: 2, label: 'Evening' },
-];
-
-const dietTypes = [
-    { value: 0, label: 'NoDiet' },
-    { value: 1, label: 'LactoVegetarian' },
-    { value: 2, label: 'OvoVegetarian' },
-    { value: 3, label: 'Paleo' },
-    { value: 4, label: 'Primal' },
-    { value: 5, label: 'Pescetarian' },
-    { value: 6, label: 'Vegan' },
-    { value: 7, label: 'Vegetarian' },
-    { value: 8, label: 'Whole30' },
-];
-
-const allergyTypes = [
-    { value: 0, label: 'Dairy' },
-    { value: 1, label: 'Egg' },
-    { value: 2, label: 'Gluten' },
-    { value: 3, label: 'Peanut' },
-    { value: 4, label: 'Seafood' },
-    { value: 5, label: 'Sesame' },
-    { value: 6, label: 'Shellfish' },
-    { value: 7, label: 'Soy' },
-    { value: 8, label: 'TreeNut' },
-    { value: 9, label: 'Wheat' },
-    { value: 10, label: 'Corn' },
 ];
 
 interface Nutrients {
@@ -74,7 +47,7 @@ const MealList: React.FC = () => {
     const [, setMeals] = useState<Meal[]>([]);
     const [filteredMeals, setFilteredMeals] = useState<Meal[]>([]);
     const [pageNumber, setPageNumber] = useState(1);
-    const [pageSize] = useState(10);
+    const [pageSize] = useState(6);
     const [totalPages, setTotalPages] = useState(1);
     const [filter, setFilter] = useState({ type: '', diet: '', allergy: '', maxCalories: '' });
     const [isFilterApplied, setIsFilterApplied] = useState(false);
@@ -93,11 +66,20 @@ const MealList: React.FC = () => {
                     pageSize
                 }
             });
+
+            console.log('Fetched meals:', response.data);
+
+            const totalCount = response.data.totalCount || 0;
+            const calculatedTotalPages = Math.ceil(totalCount / pageSize);
+
             setMeals(response.data.items);
             setFilteredMeals(response.data.items);
-            setTotalPages(Math.ceil(response.data.totalCount / pageSize));
+            setTotalPages(calculatedTotalPages);
         } catch (error) {
             console.error('Failed to fetch meals:', error);
+            setMeals([]);
+            setFilteredMeals([]);
+            setTotalPages(1);
         }
     };
 
@@ -110,17 +92,27 @@ const MealList: React.FC = () => {
                 },
                 params: { date }
             });
+
+            console.log('Fetched planner meals:', response.data);
+
             const mealIds = response.data.meals.map((meal: Meal) => meal.mealId);
             setPlannerMeals(mealIds);
         } catch (error) {
             console.error('Failed to fetch planner:', error);
+            setPlannerMeals([]);
         }
     };
 
     useEffect(() => {
         fetchMeals();
         fetchPlanner(); 
-    }, [pageNumber, pageSize, token]);
+    }, [pageNumber, token]);
+
+    useEffect(() => {
+        if (searchTerm === '') {
+            fetchMeals();
+        }
+    }, [searchTerm]);
 
     const handleFilterChange = async (e: SelectChangeEvent) => {
         const newFilter = { ...filter, [e.target.name]: e.target.value };
@@ -128,17 +120,30 @@ const MealList: React.FC = () => {
         setIsFilterApplied(true);
 
         try {
-            const response = await axios.get(`${environment.apiUrl}Meal/filter`, {
+            const response = await axios.get<PagedResult<Meal>>(`${environment.apiUrl}Meal/filter`, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
-                params: newFilter
+                params: {
+                    ...newFilter,
+                    pageNumber: 1,
+                    pageSize
+                }
             });
-            setFilteredMeals(response.data);
+
+            console.log('Filtered meals:', response.data);
+
+            const totalCount = response.data.totalCount || 0;
+            const calculatedTotalPages = Math.ceil(totalCount / pageSize);
+
+            setFilteredMeals(response.data.items);
+            setTotalPages(calculatedTotalPages);
             setPageNumber(1);
         } catch (error) {
             console.error('Failed to filter meals:', error);
+            setFilteredMeals([]);
+            setTotalPages(1);
         }
     };
 
@@ -154,18 +159,32 @@ const MealList: React.FC = () => {
 
     const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (searchTerm.trim() === '') {
+            await fetchMeals();
+            return;
+        }
+
         try {
             const response = await axios.get(`${environment.apiUrl}Meal/search`, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
-                params: { searchTerm }
+                params: { searchTerm, pageNumber, pageSize }
             });
+
+            console.log('Searched meals:', response.data);
+
+            const totalCount = response.data.totalCount || 0;
+            const calculatedTotalPages = Math.ceil(totalCount / pageSize);
+
             setFilteredMeals(response.data);
+            setTotalPages(calculatedTotalPages);
             setPageNumber(1);
         } catch (error) {
             console.error('Failed to search meals:', error);
+            setFilteredMeals([]);
+            setTotalPages(1);
         }
     };
 
@@ -183,7 +202,9 @@ const MealList: React.FC = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
+
             console.log('Added to planner:', response.data);
+
             setPlannerMeals([...plannerMeals, mealId]); 
         } catch (error) {
             console.error('Failed to add to planner:', error);
@@ -196,8 +217,6 @@ const MealList: React.FC = () => {
         navigate(`/meal/${mealId}`);
     };
 
-    const paginatedMeals = filteredMeals.slice((pageNumber - 1) * pageSize, pageNumber * pageSize);
-
     return (
         <Box sx={{ padding: 2 }}>
             <Box display="flex" justifyContent="center" alignItems="center" mt={2} mb={3}>
@@ -206,27 +225,41 @@ const MealList: React.FC = () => {
                     <InputLabel>Type</InputLabel>
                     <Select name="type" value={filter.type} onChange={handleFilterChange} label="Type" sx={{ borderRadius: '16px' }}>
                         <MenuItem value=""><em>None</em></MenuItem>
-                        {mealTypes.map((type) => (
-                            <MenuItem key={type.value} value={type.value}>{type.label}</MenuItem>
-                        ))}
+                        <MenuItem value={0}>Morning</MenuItem>
+                        <MenuItem value={1}>Noon</MenuItem>
+                        <MenuItem value={2}>Lunch</MenuItem>
                     </Select>
                 </FormControl>
                 <FormControl variant="outlined" sx={{ m: 1, minWidth: 120, borderRadius: '16px' }}>
                     <InputLabel>Diet</InputLabel>
                     <Select name="diet" value={filter.diet} onChange={handleFilterChange} label="Diet" sx={{ borderRadius: '16px' }}>
                         <MenuItem value=""><em>None</em></MenuItem>
-                        {dietTypes.map((diet) => (
-                            <MenuItem key={diet.value} value={diet.value}>{diet.label}</MenuItem>
-                        ))}
+                        <MenuItem value={0}>NoDiet</MenuItem>
+                        <MenuItem value={1}>LactoVegetarian</MenuItem>
+                        <MenuItem value={2}>OvoVegetarian</MenuItem>
+                        <MenuItem value={3}>Paleo</MenuItem>
+                        <MenuItem value={4}>Primal</MenuItem>
+                        <MenuItem value={5}>Pescetarian</MenuItem>
+                        <MenuItem value={6}>Vegan</MenuItem>
+                        <MenuItem value={7}>Vegetarian</MenuItem>
+                        <MenuItem value={8}>Whole30</MenuItem>
                     </Select>
                 </FormControl>
                 <FormControl variant="outlined" sx={{ m: 1, minWidth: 120, borderRadius: '16px' }}>
                     <InputLabel>Allergy</InputLabel>
                     <Select name="allergy" value={filter.allergy} onChange={handleFilterChange} label="Allergy" sx={{ borderRadius: '16px' }}>
                         <MenuItem value=""><em>None</em></MenuItem>
-                        {allergyTypes.map((allergy) => (
-                            <MenuItem key={allergy.value} value={allergy.value}>{allergy.label}</MenuItem>
-                        ))}
+                        <MenuItem value={0}>Dairy</MenuItem>
+                        <MenuItem value={1}>Egg</MenuItem>
+                        <MenuItem value={2}>Gluten</MenuItem>
+                        <MenuItem value={3}>Peanut</MenuItem>
+                        <MenuItem value={4}>Seafood</MenuItem>
+                        <MenuItem value={5}>Sesame</MenuItem>
+                        <MenuItem value={6}>Shellfish</MenuItem>
+                        <MenuItem value={7}>Soy</MenuItem>
+                        <MenuItem value={8}>TreeNut</MenuItem>
+                        <MenuItem value={9}>Wheat</MenuItem>
+                        <MenuItem value={10}>Corn</MenuItem>
                     </Select>
                 </FormControl>
                 <FormControl variant="outlined" sx={{ m: 1, minWidth: 150, borderRadius: '16px' }}>
@@ -276,7 +309,7 @@ const MealList: React.FC = () => {
                 </form>
             </Box>
             <Grid container spacing={2}>
-                {paginatedMeals.length > 0 ? paginatedMeals.map((meal) => (
+                {filteredMeals && filteredMeals.length > 0 ? filteredMeals.map((meal) => (
                     <Grid item key={meal.mealId} xs={12} sm={6} md={4}>
                         <Card sx={{ border: '1px solid #ddd', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
                             <CardContent sx={{ textAlign: 'center' }}>

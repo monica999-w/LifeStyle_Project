@@ -20,6 +20,7 @@ import AdminExerciseTable from '../../pages/exercise/list-full/AdminExerciseTabl
 import Planner from '../../pages/planner/Planner';
 import MealDetail from '../../pages/meal/detail/MealDetail';
 import ExerciseDetails from '../../pages/exercise/details/ExerciseDetails';
+import ContactPage from '../../pages/contact/ContactPage';
 
 interface Exercise {
     id: number;
@@ -80,6 +81,7 @@ const AppRoute: React.FC = () => {
           <Route path={routes.mealTable} element={<ProtectedRoute element={<AdminMealTable />} />} />
           <Route path={routes.exerciseTable} element={<ProtectedRoute element={<AdminExerciseTable />} />} />
           <Route path={routes.planner} element={<ProtectedRoute element={<Planner />} />} />
+          <Route path={routes.contact} element={<ProtectedRoute element={<ContactPage />} />} />
           <Route path="/meal/:mealId" element={<ProtectedRoute element={<MealDetail />} />} />
           <Route path="/exercises/:exerciseId" element={<ProtectedRoute element={<ExerciseDetails />} />} />
         

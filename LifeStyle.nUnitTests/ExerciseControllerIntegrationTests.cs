@@ -25,7 +25,8 @@ namespace LifeStyle.IntegrationTests
     {
         [Fact]
         public async Task ExerciseController_GetAllExercises_ReturnsOkWithCorrectData()
-        {// Arrange
+        {
+            // Arrange
             var numberOfExercise = 3;
 
             using var contextBuilder = new DataContextBuilder();

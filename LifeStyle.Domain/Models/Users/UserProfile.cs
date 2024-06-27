@@ -28,7 +28,7 @@ namespace LifeStyle.Domain.Models.Users
 
         public string UserId { get; set; }
         public IdentityUser User { get; set; }
-
+        public List<WeightHistory> WeightEntries { get; set; } = new List<WeightHistory>();
 
         public UserProfile()
         {

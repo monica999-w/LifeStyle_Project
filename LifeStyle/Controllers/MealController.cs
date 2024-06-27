@@ -68,20 +68,20 @@ namespace LifeStyle.Controllers
 
         [HttpGet("filter")]
         [Authorize(Roles = "User")]
-        public async Task<ActionResult<IEnumerable<Meal>>> FilterExercises([FromQuery] MealFilterDto filterDto)
+        public async Task<ActionResult<PagedResult<Meal>>> FilterMeals([FromQuery] MealFilterDto filterDto, [FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 6)
         {
             try
             {
-                var query = new FilterMealQuery(filterDto);
-                var meal = await _mediator.Send(query);
-                return Ok(meal);
+                var query = new FilterMealQuery(filterDto, pageNumber, pageSize);
+                var result = await _mediator.Send(query);
+                return Ok(result);
             }
-
             catch (Exception ex)
             {
                 return StatusCode(500, "An unexpected error occurred while filtering meals: " + ex.Message);
             }
         }
+
 
         [HttpGet("search")]
         [Authorize(Roles = "User")]

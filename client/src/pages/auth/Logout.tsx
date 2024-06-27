@@ -20,25 +20,39 @@ const Logout: React.FC<LogoutProps> = ({ sidebarOpen }) => {
 
     return (
         <Tooltip title="Logout" placement="right">
-            {sidebarOpen ? (
-                <Button
-                    variant="contained"
-                    color="secondary"
-                    startIcon={<FaSignOutAlt />}
-                    onClick={handleLogout}
-                    sx={{ borderRadius: 8, backgroundColor: 'red' }}
-                >
-                    Logout
-                </Button>
-            ) : (
-                <IconButton
-                    color="secondary"
-                    onClick={handleLogout}
-                    sx={{ borderRadius: 8, backgroundColor: 'red' }}
-                >
-                    <FaSignOutAlt style={{ color: 'white' }} />
-                </IconButton>
-            )}
+            <div>
+                {sidebarOpen ? (
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        startIcon={<FaSignOutAlt />}
+                        onClick={handleLogout}
+                        sx={{
+                            borderRadius: 8,
+                            backgroundColor: 'red',
+                            '&:hover': {
+                                backgroundColor: 'darkred', // schimbarea culorii la hover
+                            },
+                        }}
+                    >
+                        Logout
+                    </Button>
+                ) : (
+                    <IconButton
+                        color="secondary"
+                        onClick={handleLogout}
+                        sx={{
+                            borderRadius: 8,
+                            backgroundColor: 'red',
+                            '&:hover': {
+                                backgroundColor: 'darkred', 
+                            },
+                        }}
+                    >
+                        <FaSignOutAlt style={{ color: 'white' }} />
+                    </IconButton>
+                )}
+            </div>
         </Tooltip>
     );
 };

@@ -22,6 +22,13 @@ interface Exercise {
     majorMuscle: number;
 }
 
+interface PagedResult<T> {
+    items: T[];
+    totalCount: number;
+    pageSize: number;
+    pageNumber: number;
+}
+
 const ExerciseListFull: React.FC = () => {
     const { token, email } = useAuth();
     const { notify } = useNotification();
@@ -37,19 +44,29 @@ const ExerciseListFull: React.FC = () => {
 
     const fetchExercises = async () => {
         try {
-            const response = await axios.get(`${environment.apiUrl}Exercise`, {
+            const response = await axios.get<PagedResult<Exercise>>(`${environment.apiUrl}Exercise`, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
+                },
+                params: {
+                    pageNumber: page,
+                    pageSize: 6
                 }
             });
-            setExercises(response.data.items || []);
-            setFilteredExercises(response.data.items || []);
-            setTotalPages(response.data.totalPages || 1);
+
+            console.log('Fetched exercises:', response.data);
+
+            const totalCount = response.data.totalCount || 0;
+            const calculatedTotalPages = Math.ceil(totalCount / 6);
+
+            setExercises(response.data.items);
+            setFilteredExercises(response.data.items);
+            setTotalPages(calculatedTotalPages);
         } catch (error) {
-            console.error('Failed to fetch exercises:', error);
-            notify('Failed to fetch exercises', 'error');
             setExercises([]);
+            setFilteredExercises([]);
+            setTotalPages(1);
         }
     };
 
@@ -62,11 +79,14 @@ const ExerciseListFull: React.FC = () => {
                 },
                 params: { date }
             });
+
+            console.log('Fetched planner exercises:', response.data);
+
             const exerciseIds = response.data.exercises.map((exercise: Exercise) => exercise.id);
             setPlannerExercises(exerciseIds);
         } catch (error) {
             console.error('Failed to fetch planner:', error);
-            notify('Failed to fetch planner', 'error');
+           
         }
     };
 
@@ -75,8 +95,14 @@ const ExerciseListFull: React.FC = () => {
     }, [page, token]);
 
     useEffect(() => {
-        fetchPlanner(); // Fetch planner exercises when component mounts
+        fetchPlanner(); 
     }, [token, email]);
+
+    useEffect(() => {
+        if (searchTerm === '') {
+            fetchExercises();
+        }
+    }, [searchTerm]);
 
     const handleFilterChange = async (e: SelectChangeEvent) => {
         const newFilter = { ...filter, [e.target.name]: e.target.value };
@@ -89,13 +115,26 @@ const ExerciseListFull: React.FC = () => {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
-                params: newFilter
+                params: {
+                    ...newFilter,
+                    pageNumber: 1,
+                    pageSize: 6
+                }
             });
+
+            console.log('Filtered exercises:', response.data);
+
+            const totalCount = response.data.totalCount || 0;
+            const calculatedTotalPages = Math.ceil(totalCount / 6);
+
             setFilteredExercises(response.data);
+            setTotalPages(calculatedTotalPages);
             setPage(1);
         } catch (error) {
             console.error('Failed to filter exercises:', error);
             notify('Failed to filter exercises', 'error');
+            setFilteredExercises([]);
+            setTotalPages(1);
         }
     };
 
@@ -105,25 +144,62 @@ const ExerciseListFull: React.FC = () => {
         await fetchExercises();
     };
 
-    const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
+    const handlePageChange = async (_event: React.ChangeEvent<unknown>, value: number) => {
         setPage(value);
+        if (isFilterApplied) {
+            const response = await axios.get<PagedResult<Exercise>>(`${environment.apiUrl}Exercise/filter`, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`
+                },
+                params: {
+                    ...filter,
+                    pageNumber: value,
+                    pageSize: 10
+                }
+            });
+
+            console.log('Paged filtered exercises:', response.data);
+
+            const totalCount = response.data.totalCount || 0;
+            const calculatedTotalPages = Math.ceil(totalCount / 6);
+
+            setFilteredExercises(response.data.items);
+            setTotalPages(calculatedTotalPages);
+        } else {
+            await fetchExercises();
+        }
     };
 
     const handleSearch = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        if (searchTerm.trim() === '') {
+            fetchExercises();
+            return;
+        }
+
         try {
             const response = await axios.get(`${environment.apiUrl}Exercise/search`, {
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`
                 },
-                params: { searchTerm }
+                params: { searchTerm, pageNumber: 1, pageSize: 6 }
             });
+
+            console.log('Searched exercises:', response.data);
+
+            const totalCount = response.data.totalCount || 0;
+            const calculatedTotalPages = Math.ceil(totalCount / 6);
+
             setFilteredExercises(response.data);
+            setTotalPages(calculatedTotalPages);
             setPage(1);
         } catch (error) {
             console.error('Failed to search exercises:', error);
             notify('Failed to search exercises', 'error');
+            setFilteredExercises([]);
+            setTotalPages(1);
         }
     };
 
@@ -141,6 +217,7 @@ const ExerciseListFull: React.FC = () => {
                     Authorization: `Bearer ${token}`
                 }
             });
+
             console.log('Added to planner:', response.data);
             setPlannerExercises([...plannerExercises, exerciseId]);
             notify('Exercise added to planner', 'success');
@@ -151,8 +228,6 @@ const ExerciseListFull: React.FC = () => {
     };
 
     const isExerciseInPlanner = (exerciseId: number) => plannerExercises.includes(exerciseId);
-
-    const paginatedExercises = filteredExercises.slice((page - 1) * 10, page * 10);
 
     return (
         <Box>
@@ -231,7 +306,7 @@ const ExerciseListFull: React.FC = () => {
                 </form>
             </Box>
             <Grid container spacing={2}>
-                {paginatedExercises.length > 0 ? paginatedExercises.map(exercise => (
+                {filteredExercises && filteredExercises.length > 0 ? filteredExercises.map(exercise => (
                     <Grid item key={exercise.id} xs={12} sm={6} md={4}>
                         <Card className="exercise-card" variant="outlined">
                             <CardContent>

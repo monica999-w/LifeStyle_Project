@@ -7,14 +7,15 @@ const routes = {
     profile: "/profile",
     addExercise: "/add-exercise",
     exerciseList: "/exercise-list-filter",
-    exerciseListFull: "/exercise-list",
+    exerciseListFull: "/exercises",
     exerciseFilter: "/exercise-filter",
     exerciseTable:"/exercise-table",
     userList:"/user-list",
     addMeals:"/add-meal",
     listMeal:"/meal",
     mealTable:"/meal-table",
-    planner:"/planner"
+    planner:"/planner",
+    contact:"/contact"
   };
   
   export default routes;

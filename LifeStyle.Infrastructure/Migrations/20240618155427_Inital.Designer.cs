@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace LifeStyle.Infrastructure.Migrations
 {
     [DbContext(typeof(LifeStyleContext))]
-    [Migration("20240614102142_Inital")]
+    [Migration("20240618155427_Inital")]
     partial class Inital
     {
         /// <inheritdoc />
@@ -192,6 +192,30 @@ namespace LifeStyle.Infrastructure.Migrations
                     b.HasIndex("Email");
 
                     b.ToTable("UserProfiles");
+                });
+
+            modelBuilder.Entity("LifeStyle.Domain.Models.Users.WeightHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserProfileId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Weight")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserProfileId");
+
+                    b.ToTable("WeightHistory");
                 });
 
             modelBuilder.Entity("LifeStyle.Models.Planner.Planner", b =>
@@ -463,6 +487,17 @@ namespace LifeStyle.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("LifeStyle.Domain.Models.Users.WeightHistory", b =>
+                {
+                    b.HasOne("LifeStyle.Domain.Models.Users.UserProfile", "UserProfile")
+                        .WithMany("WeightEntries")
+                        .HasForeignKey("UserProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserProfile");
+                });
+
             modelBuilder.Entity("LifeStyle.Models.Planner.Planner", b =>
                 {
                     b.HasOne("LifeStyle.Domain.Models.Users.UserProfile", "Profile")
@@ -536,6 +571,11 @@ namespace LifeStyle.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("LifeStyle.Domain.Models.Users.UserProfile", b =>
+                {
+                    b.Navigation("WeightEntries");
                 });
 #pragma warning restore 612, 618
         }

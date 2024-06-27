@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace LifeStyle.Application.Responses
 {
-    public class NutrientDto
+    public class Nutrient
     {
         public int NutrientId { get; set; }
 
@@ -22,12 +22,12 @@ namespace LifeStyle.Application.Responses
         [Range(0, double.MaxValue, ErrorMessage = "Fat must be a positive number")]
         public double Fat { get; set; }
 
-        public static NutrientDto FromNutrient(Nutrients nutrients) 
+        public static Nutrient FromNutrient(Nutrients nutrients) 
         {
             if (nutrients == null)
                 return null;
 
-            return new NutrientDto
+            return new Nutrient
             {
               //  NutrientId = nutrients.NutrientId,
                 Calories = nutrients.Calories,

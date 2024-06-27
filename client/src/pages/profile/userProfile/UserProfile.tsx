@@ -7,26 +7,21 @@ import { useNotification } from '../../../components/provider/NotificationContex
 import {
     Avatar,
     Box,
-    Button,
     Container,
     Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
     Typography,
     IconButton,
     List,
     ListItem,
     ListItemIcon,
     ListItemText,
-    Alert,
     Paper
 } from '@mui/material';
 import { FaEnvelope, FaPhone, FaRulerVertical, FaWeight, FaBirthdayCake, FaTransgender, FaEdit } from 'react-icons/fa';
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend } from 'chart.js';
+import { Line } from 'react-chartjs-2';
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, LineElement, PointElement, Title, Tooltip, Legend);
 
 interface UserProfile {
     profileId: number;
@@ -35,14 +30,20 @@ interface UserProfile {
     height: number;
     weight: number;
     birthDate: string;
-    gender: string;
+    gender: number;
     photoUrl: string;
+}
+
+interface WeightHistory {
+    date: string;
+    weight: number;
 }
 
 const UserProfile: React.FC = () => {
     const { token } = useAuth();
     const { notify } = useNotification();
     const [profile, setProfile] = useState<UserProfile | null>(null);
+    const [weightHistory, setWeightHistory] = useState<WeightHistory[]>([]);
     const [error, setError] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const apiUrl = `${environment.apiUrl}Auth/profile`;
@@ -60,17 +61,23 @@ const UserProfile: React.FC = () => {
         }
     };
 
+    const fetchWeightHistory = async () => {
+        try {
+            const response = await axios.get<WeightHistory[]>(`${environment.apiUrl}Auth/profile/weightHistory`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            setWeightHistory(response.data);
+            notify('Weight history fetched successfully.', 'success');
+        } catch (error) {
+            setError('Failed to fetch weight history.');
+            notify('Failed to fetch weight history.', 'error');
+        }
+    };
+
     useEffect(() => {
         fetchProfile();
+        fetchWeightHistory();
     }, [token]);
-
-    if (!profile) {
-        return <div>Loading...</div>;
-    }
-
-    if (error) {
-        return <div className="error">{error}</div>;
-    }
 
     const calculateBMI = (weight: number, height: number) => {
         if (weight > 0 && height > 0) {
@@ -80,35 +87,13 @@ const UserProfile: React.FC = () => {
         return null;
     };
 
-    const bmi = calculateBMI(profile.weight, profile.height);
-
-    const bmiData = {
-        labels: ['BMI'],
-        datasets: [
-            {
-                label: 'BMI',
-                data: bmi ? [parseFloat(bmi)] : [],
-                backgroundColor: 'rgba(75,192,192,1)',
-                borderColor: 'rgba(75,192,192,1)',
-                borderWidth: 1,
-            },
-        ],
-    };
-
-    const bmiOptions = {
-        scales: {
-            y: {
-                beginAtZero: true,
-                max: 40
-            }
-        }
-    };
+    const bmi = profile ? calculateBMI(profile.weight, profile.height) : null;
 
     const bmiDescription = () => {
         if (bmi) {
             const bmiValue = parseFloat(bmi);
             if (bmiValue < 18.5) {
-                return "You are underweight. It is important to follow a balanced diet that includes a variety of foods, including proteins, carbohydrates, and healthy fats. Consider consulting with a nutritionist to create a meal plan that helps you gain weight in a healthy manner. Additionally, incorporating strength training exercises can help you build muscle mass.";
+                return "You are underweight. It's important to follow a balanced diet that includes a variety of foods, including proteins, carbohydrates, and healthy fats. Consider consulting with a nutritionist to create a meal plan that helps you gain weight in a healthy manner. Additionally, incorporating strength training exercises can help you build muscle mass.";
             } else if (bmiValue >= 18.5 && bmiValue < 24.9) {
                 return "You have a normal weight. Great job! Maintain your healthy lifestyle by continuing to eat a balanced diet rich in fruits, vegetables, whole grains, and lean proteins. Regular physical activity, such as walking, jogging, or yoga, will help you stay fit. Remember to stay hydrated and get enough sleep for overall well-being.";
             } else if (bmiValue >= 25 && bmiValue < 29.9) {
@@ -120,10 +105,40 @@ const UserProfile: React.FC = () => {
         return "";
     };
 
+    if (!profile) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div className="error">{error}</div>;
+    }
+
+    const weightData = {
+        labels: weightHistory.map(entry => new Date(entry.date).toLocaleDateString()),
+        datasets: [
+            {
+                label: 'Weight',
+                data: weightHistory.map(entry => entry.weight),
+                borderColor: 'rgba(75,192,192,1)',
+                backgroundColor: 'rgba(75,192,192,0.2)',
+                borderWidth: 2,
+                tension: 0.1
+            },
+        ],
+    };
+
+    const weightOptions = {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    };
+
     return (
         <Container className="profile-container">
             <Box display="flex" justifyContent="space-between" mb={3}>
-                <Typography variant="h4">User Profile</Typography>
+                <Typography variant="h4"> Profile</Typography>
                 <IconButton color="primary" onClick={() => setIsModalOpen(true)}>
                     <FaEdit />
                 </IconButton>
@@ -161,23 +176,19 @@ const UserProfile: React.FC = () => {
                         </ListItem>
                         <ListItem>
                             <ListItemIcon><FaBirthdayCake /></ListItemIcon>
-                            <ListItemText primary="Birth Date" secondary={new Date(profile.birthDate).toLocaleDateString()} />
+                            <ListItemText primary="Birth Date" secondary={new Date(profile.birthDate).toISOString().split('T')[0]} />
                         </ListItem>
                         <ListItem>
                             <ListItemIcon><FaTransgender /></ListItemIcon>
-                            <ListItemText primary="Gender" secondary={profile.gender} />
+                            <ListItemText primary="Gender" secondary={profile.gender === 0 ? 'Male' : 'Female'} />
                         </ListItem>
                     </List>
                 </Box>
                 <Box flex={1} sx={{ mt: 18 }}>
-                    {bmi ? (
-                        <Box width="100%">
-                            <Typography variant="h6">Your BMI</Typography>
-                            <Bar data={bmiData} options={bmiOptions} />
-                        </Box>
-                    ) : (
-                        <Alert severity="warning">Please update your profile to calculate BMI.</Alert>
-                    )}
+                    <Box width="100%">
+                        <Typography variant="h6">Weight History</Typography>
+                        <Line data={weightData} options={weightOptions} />
+                    </Box>
                 </Box>
             </Box>
             <Box mt={3} component={Paper} p={2}>
@@ -187,19 +198,13 @@ const UserProfile: React.FC = () => {
                         Your BMI is <strong>{bmi}</strong>. {bmiDescription()}
                     </Typography>
                 ) : (
-                    <Alert severity="warning">Please update your profile to see your BMI result.</Alert>
+                    <Typography variant="h6" sx={{ mt: 2 }}>Please update your profile to see your BMI result.</Typography>
                 )}
             </Box>
             <Dialog open={isModalOpen} onClose={() => setIsModalOpen(false)}>
-                <DialogTitle>Update Profile</DialogTitle>
-                <DialogContent>
-                    <UpdateProfile closeModal={() => setIsModalOpen(false)} refreshProfile={fetchProfile} />
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setIsModalOpen(false)} color="primary">
-                        Close
-                    </Button>
-                </DialogActions>
+                <Box>
+                    <UpdateProfile closeModal={() => setIsModalOpen(false)} refreshProfile={() => window.location.reload()} />
+                </Box>
             </Dialog>
         </Container>
     );

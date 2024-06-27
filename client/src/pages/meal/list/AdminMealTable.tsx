@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, IconButton, Modal, TextField, Select, MenuItem, InputLabel, FormControl, Typography } from '@mui/material';
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Box, IconButton, Modal, TextField, Select, MenuItem, InputLabel, FormControl, Typography, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle } from '@mui/material';
 import axios from 'axios';
 import { useAuth } from '../../../components/provider/AuthProvider';
 import { environment } from '../../../environments/environment';
@@ -74,6 +74,7 @@ const AdminMealTable: React.FC = () => {
     const [meals, setMeals] = useState<Meal[]>([]);
     const [editMeal, setEditMeal] = useState<Meal | null>(null);
     const [newImage, setNewImage] = useState<File | null>(null);
+    const [deleteMealId, setDeleteMealId] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchMeals = async () => {
@@ -93,18 +94,21 @@ const AdminMealTable: React.FC = () => {
         fetchMeals();
     }, [token]);
 
-    const handleDelete = async (mealId: number) => {
-        try {
-            await axios.delete(`${environment.apiUrl}Meal/${mealId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            setMeals(meals.filter(meal => meal.mealId !== mealId));
-            notify('Meal deleted successfully', 'success');
-        } catch (error) {
-            console.error('Failed to delete meal:', error);
-            notify('Failed to delete meal', 'error');
+    const handleDelete = async () => {
+        if (deleteMealId !== null) {
+            try {
+                await axios.delete(`${environment.apiUrl}Meal/${deleteMealId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setMeals(meals.filter(meal => meal.mealId !== deleteMealId));
+                notify('Meal deleted successfully', 'success');
+                setDeleteMealId(null); 
+            } catch (error) {
+                console.error('Failed to delete meal:', error);
+                notify('Failed to delete meal', 'error');
+            }
         }
     };
 
@@ -164,6 +168,14 @@ const AdminMealTable: React.FC = () => {
         }
     };
 
+    const handleOpenDeleteDialog = (mealId: number) => {
+        setDeleteMealId(mealId);
+    };
+
+    const handleCloseDeleteDialog = () => {
+        setDeleteMealId(null);
+    };
+
     return (
         <Box sx={{ padding: 2 }}>
             <TableContainer component={Paper}>
@@ -192,7 +204,7 @@ const AdminMealTable: React.FC = () => {
                                     <IconButton onClick={() => handleEdit(meal)} color="primary">
                                         <EditIcon />
                                     </IconButton>
-                                    <IconButton onClick={() => handleDelete(meal.mealId)} color="secondary">
+                                    <IconButton onClick={() => handleOpenDeleteDialog(meal.mealId)} color="secondary">
                                         <DeleteIcon />
                                     </IconButton>
                                 </TableCell>
@@ -393,9 +405,29 @@ const AdminMealTable: React.FC = () => {
                     )}
                 </Box>
             </Modal>
+            <Dialog
+                open={deleteMealId !== null}
+                onClose={handleCloseDeleteDialog}
+                aria-labelledby="delete-meal-dialog-title"
+                aria-describedby="delete-meal-dialog-description"
+            >
+                <DialogTitle id="delete-meal-dialog-title">Confirm Delete</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="delete-meal-dialog-description">
+                        Are you sure you want to delete this meal?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDeleteDialog} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleDelete} color="secondary" autoFocus>
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };
 
 export default AdminMealTable;
-

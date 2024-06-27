@@ -62,7 +62,10 @@ namespace LifeStyle.Aplication.Logic
 
         public async Task<Planner?> GetPlannerByDate(int userId, DateTime date)
         {
-            return await _lifeStyleContext.Planners.Include(p => p.Meals).Include(p => p.Exercises)
+            return await _lifeStyleContext.Planners.
+                Include(p => p.Meals)
+                 .ThenInclude(m => m.Nutrients)
+                .Include(p => p.Exercises)
                 .FirstOrDefaultAsync(p => p.Profile.ProfileId == userId && p.Date.Date == date.Date);
         }
 

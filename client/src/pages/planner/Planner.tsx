@@ -10,11 +10,19 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { styled } from '@mui/system';
 import { useNotification } from '../../components/provider/NotificationContext';
 
+interface Nutrients {
+    calories: number;
+    protein: number;
+    carbohydrates: number;
+    fat: number;
+}
+
 interface Meal {
     mealId: number;
     mealName: string;
     image: string;
     description: string;
+    nutrients: Nutrients; // Adding nutrients property
 }
 
 interface Exercise {
@@ -182,6 +190,14 @@ const Planner: React.FC = () => {
         handleCloseConfirm();
     };
 
+    // Log planner meals to debug
+    console.log('Planner meals:', planner?.meals);
+
+    const totalCalories = planner?.meals.reduce((acc, meal) => {
+        console.log('Meal nutrients:', meal.nutrients); // Log nutrients of each meal
+        return acc + (meal.nutrients?.calories || 0);
+    }, 0) || 0;
+
     return (
         <Box sx={{ padding: 2 }}>
            
@@ -200,6 +216,9 @@ const Planner: React.FC = () => {
                       />
                 )}
             </Box>
+                    <Box sx={{ marginTop: 2, padding: 2, border: '1px solid #ddd', borderRadius: '10px', boxShadow: '0 2px 5px rgba(0,0,0,0.1)' }}>
+                        <Typography variant="h6">Total Calories for Today: {totalCalories}</Typography>
+                    </Box>
                     <Typography variant="h5" gutterBottom>Meals</Typography>
                     <Grid container spacing={2}>
                         {planner.meals.map((meal) => (

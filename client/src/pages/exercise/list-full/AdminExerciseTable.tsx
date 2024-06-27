@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper,
-    Button, Box, IconButton, TextField, Select, MenuItem, InputLabel, FormControl, Dialog, DialogTitle, DialogContent, Typography
+    Button, Box, IconButton, TextField, Select, MenuItem, InputLabel, FormControl, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions, Typography
 } from '@mui/material';
 import axios from 'axios';
 import { useAuth } from '../../../components/provider/AuthProvider';
@@ -56,6 +56,7 @@ const AdminExerciseTable: React.FC = () => {
     const [exercises, setExercises] = useState<Exercise[]>([]);
     const [editExercise, setEditExercise] = useState<Exercise | null>(null);
     const [openEditDialog, setOpenEditDialog] = useState(false);
+    const [deleteExerciseId, setDeleteExerciseId] = useState<number | null>(null);
 
     useEffect(() => {
         const fetchExercises = async () => {
@@ -76,19 +77,30 @@ const AdminExerciseTable: React.FC = () => {
         fetchExercises();
     }, [token]);
 
-    const handleDelete = async (exerciseId: number) => {
-        try {
-            await axios.delete(`${environment.apiUrl}Exercise/${exerciseId}`, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            setExercises(exercises.filter(exercise => exercise.id !== exerciseId));
-            notify('Exercise deleted successfully', 'success');
-        } catch (error) {
-            console.error('Failed to delete exercise:', error);
-            notify('Failed to delete exercise', 'error');
+    const handleDelete = async () => {
+        if (deleteExerciseId !== null) {
+            try {
+                await axios.delete(`${environment.apiUrl}Exercise/${deleteExerciseId}`, {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+                setExercises(exercises.filter(exercise => exercise.id !== deleteExerciseId));
+                setDeleteExerciseId(null);
+                notify('Exercise deleted successfully', 'success');
+            } catch (error) {
+                console.error('Failed to delete exercise:', error);
+                notify('Failed to delete exercise', 'error');
+            }
         }
+    };
+
+    const handleOpenDeleteDialog = (exerciseId: number) => {
+        setDeleteExerciseId(exerciseId);
+    };
+
+    const handleCloseDeleteDialog = () => {
+        setDeleteExerciseId(null);
     };
 
     const handleEdit = (exercise: Exercise) => {
@@ -154,7 +166,7 @@ const AdminExerciseTable: React.FC = () => {
                                     <IconButton color="primary" onClick={() => handleEdit(exercise)}>
                                         <EditIcon />
                                     </IconButton>
-                                    <IconButton color="secondary" onClick={() => handleDelete(exercise.id)}>
+                                    <IconButton color="secondary" onClick={() => handleOpenDeleteDialog(exercise.id)}>
                                         <DeleteIcon />
                                     </IconButton>
                                 </TableCell>
@@ -259,6 +271,25 @@ const AdminExerciseTable: React.FC = () => {
                     </DialogContent>
                 </Dialog>
             )}
+            <Dialog
+                open={deleteExerciseId !== null}
+                onClose={handleCloseDeleteDialog}
+            >
+                <DialogTitle>Confirm Delete</DialogTitle>
+                <DialogContent>
+                    <DialogContentText>
+                        Are you sure you want to delete this exercise?
+                    </DialogContentText>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={handleCloseDeleteDialog} color="primary">
+                        Cancel
+                    </Button>
+                    <Button onClick={handleDelete} color="secondary">
+                        Delete
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

@@ -3,6 +3,7 @@
     padding: 0;
     box-sizing: border-box;
     font-family: Arial, sans-serif;
+  
 }
 
 .container {
@@ -47,7 +48,7 @@
 .signup {
     background-color: white;
     flex: 2;
-    padding: 100px;
+    padding: 50px;
     display: flex;
     flex-direction: column;
     justify-content: center;

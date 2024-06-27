@@ -7,6 +7,7 @@ using LifeStyle.Infrastructure.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
@@ -176,6 +177,8 @@ namespace LifeStyle.ConsolePresentation.Controllers
         {
             try
             {
+                _logger.LogInformation("Updating user profile with data: {@UpdateUserProfileDto}", updateUserProfileDto);
+
                 var email = User.FindFirstValue(ClaimTypes.Email);
                 if (string.IsNullOrEmpty(email))
                 {
@@ -184,25 +187,46 @@ namespace LifeStyle.ConsolePresentation.Controllers
                 }
 
                 var userProfile = await _unitOfWork.UserProfileRepository.GetByName(email);
+
                 if (userProfile == null)
                 {
                     _logger.LogWarning("User profile not found for user with: {Email}", email);
                     return NotFound("User profile not found.");
                 }
 
-                userProfile.PhoneNumber = updateUserProfileDto.PhoneNumber;
-                userProfile.Height = updateUserProfileDto.Height;
-                userProfile.Weight = updateUserProfileDto.Weight;
-                userProfile.BirthDate = updateUserProfileDto.BirthDate;
-                userProfile.Gender = updateUserProfileDto.Gender;
+                if (updateUserProfileDto.PhoneNumber != null)
+                    userProfile.PhoneNumber = updateUserProfileDto.PhoneNumber;
 
-                if (updateUserProfileDto.PhotoUrl != null)
+                if (updateUserProfileDto.Height.HasValue)
+                    userProfile.Height = updateUserProfileDto.Height.Value;
+
+                if (updateUserProfileDto.Weight.HasValue)
                 {
-                    userProfile.PhotoUrl = await _fileService.SaveFileAsync(updateUserProfileDto.PhotoUrl, "uploads");
+                    if (userProfile.Weight != updateUserProfileDto.Weight.Value)
+                    {
+                        var weightEntry = new WeightHistory
+                        {
+                            Weight = updateUserProfileDto.Weight.Value,
+                            Date = DateTime.UtcNow,
+                            UserProfileId = userProfile.ProfileId
+                        };
+                        userProfile.WeightEntries.Add(weightEntry);
+                    }
+
+                    userProfile.Weight = updateUserProfileDto.Weight.Value;
                 }
 
-                await _unitOfWork.UserProfileRepository.Update(userProfile);
-                await _unitOfWork.SaveAsync();
+                if (updateUserProfileDto.BirthDate.HasValue)
+                    userProfile.BirthDate = updateUserProfileDto.BirthDate.Value;
+
+                if (updateUserProfileDto.Gender != null)
+                    userProfile.Gender = updateUserProfileDto.Gender;
+
+                if (updateUserProfileDto.PhotoUrl != null)
+                    userProfile.PhotoUrl = await _fileService.SaveFileAsync(updateUserProfileDto.PhotoUrl, "uploads");
+
+                _lifeStyleContext.UserProfiles.Update(userProfile);
+                await _lifeStyleContext.SaveChangesAsync();
 
                 return Ok(userProfile);
             }
@@ -212,6 +236,10 @@ namespace LifeStyle.ConsolePresentation.Controllers
                 return StatusCode(500, "Internal server error.");
             }
         }
+
+
+
+
         [HttpGet("profile")]
         [Authorize]
         public async Task<IActionResult> GetProfile()
@@ -240,6 +268,49 @@ namespace LifeStyle.ConsolePresentation.Controllers
                 return StatusCode(500, "Internal server error.");
             }
         }
-    }
+
+        [HttpGet("profile/weightHistory")]
+        [Authorize]
+        public async Task<IActionResult> GetWeightHistory()
+        {
+            try
+            {
+                var email = User.FindFirstValue(ClaimTypes.Email);
+                if (string.IsNullOrEmpty(email))
+                {
+                    _logger.LogWarning("User not found with email: {Email}", email);
+                    return Unauthorized("User not logged in.");
+                }
+
+                var userProfile = await _lifeStyleContext.UserProfiles
+                    .Include(u => u.WeightEntries)
+                    .FirstOrDefaultAsync(u => u.Email == email);
+
+                if (userProfile == null)
+                {
+                    _logger.LogWarning("User profile not found for user with email: {Email}", email);
+                    return NotFound("User profile not found.");
+                }
+
+                var weightHistory = userProfile.WeightEntries
+                    .OrderByDescending(e => e.Date)
+                    .Select(e => new WeightEntryDto
+                    {
+                        Id = e.Id,
+                        Weight = e.Weight,
+                        Date = e.Date
+                    })
+                    .ToList();
+
+                return Ok(weightHistory);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "An error occurred while fetching the weight history.");
+                return StatusCode(500, "Internal server error.");
+            }
+        }
+
+     }
 }
 

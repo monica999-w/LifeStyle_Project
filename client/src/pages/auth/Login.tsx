@@ -6,6 +6,7 @@ import axios from 'axios';
 import './Auth.css';
 import { environment } from '../../environments/environment';
 import routes from '../../components/route/routes';
+import { jwtDecode } from 'jwt-decode';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -23,7 +24,16 @@ const Login: React.FC = () => {
       const response = await axios.post(apiUrl, { email, password });
       setToken(response.data.token);
       notify('Login successful', 'success');
-      navigate(routes.profile);
+
+      
+      const decodedToken: { role: string } = jwtDecode(response.data.token);
+      if (decodedToken.role === 'User') {
+        navigate(routes.profile);
+      } else if (decodedToken.role === 'Admin') {
+        navigate(routes.userList);
+      } else {
+        navigate('/');
+      }
     } catch (error) {
       setError('Login failed. Please check your credentials.');
       notify('Login failed. Please check your credentials.', 'error');

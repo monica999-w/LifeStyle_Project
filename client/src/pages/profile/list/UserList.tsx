@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../../components/provider/AuthProvider';
 import { environment } from '../../../environments/environment';
-import { Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography } from '@mui/material';
+import { Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Typography, Dialog, DialogTitle, DialogContent, DialogContentText, DialogActions } from '@mui/material';
 import { useNotification } from '../../../components/provider/NotificationContext';
 
 interface User {
@@ -16,6 +16,7 @@ const UserList: React.FC = () => {
   const { notify } = useNotification();
   const [users, setUsers] = useState<User[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [deleteUserId, setDeleteUserId] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -36,20 +37,31 @@ const UserList: React.FC = () => {
     fetchUsers();
   }, [token, notify]);
 
-  const handleDelete = async (userId: number) => {
-    try {
-      await axios.delete(`${environment.apiUrl}Users/${userId}`, {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      setUsers(users.filter((user) => user.id !== userId));
-      notify('User deleted successfully.', 'success');
-    } catch (err) {
-      setError('Failed to delete user.');
-      notify('Failed to delete user.', 'error');
+  const handleDelete = async () => {
+    if (deleteUserId !== null) {
+      try {
+        await axios.delete(`${environment.apiUrl}Users/${deleteUserId}`, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        setUsers(users.filter((user) => user.id !== deleteUserId));
+        setDeleteUserId(null);
+        notify('User deleted successfully.', 'success');
+      } catch (err) {
+        setError('Failed to delete user.');
+        notify('Failed to delete user.', 'error');
+      }
     }
+  };
+
+  const handleOpenDeleteDialog = (userId: number) => {
+    setDeleteUserId(userId);
+  };
+
+  const handleCloseDeleteDialog = () => {
+    setDeleteUserId(null);
   };
 
   return (
@@ -75,7 +87,7 @@ const UserList: React.FC = () => {
                 <TableCell>{user.email}</TableCell>
                 <TableCell>{user.phoneNumber}</TableCell>
                 <TableCell>
-                  <Button variant="contained" color="secondary" onClick={() => handleDelete(user.id)}>
+                  <Button variant="contained" color="secondary" onClick={() => handleOpenDeleteDialog(user.id)}>
                     Delete
                   </Button>
                 </TableCell>
@@ -84,8 +96,28 @@ const UserList: React.FC = () => {
           </TableBody>
         </Table>
       </TableContainer>
+      <Dialog
+        open={deleteUserId !== null}
+        onClose={handleCloseDeleteDialog}
+      >
+        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this user?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDeleteDialog} color="primary">
+            Cancel
+          </Button>
+          <Button onClick={handleDelete} color="secondary">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };
 
 export default UserList;
+

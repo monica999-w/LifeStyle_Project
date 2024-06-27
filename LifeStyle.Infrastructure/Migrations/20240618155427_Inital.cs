@@ -263,6 +263,27 @@ namespace LifeStyle.Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WeightHistory",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Weight = table.Column<double>(type: "float", nullable: false),
+                    Date = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    UserProfileId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WeightHistory", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WeightHistory_UserProfiles_UserProfileId",
+                        column: x => x.UserProfileId,
+                        principalTable: "UserProfiles",
+                        principalColumn: "ProfileId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "PlannerExercise",
                 columns: table => new
                 {
@@ -373,6 +394,11 @@ namespace LifeStyle.Infrastructure.Migrations
                 name: "IX_UserProfiles_Email",
                 table: "UserProfiles",
                 column: "Email");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WeightHistory_UserProfileId",
+                table: "WeightHistory",
+                column: "UserProfileId");
         }
 
         /// <inheritdoc />
@@ -398,6 +424,9 @@ namespace LifeStyle.Infrastructure.Migrations
 
             migrationBuilder.DropTable(
                 name: "PlannerMeal");
+
+            migrationBuilder.DropTable(
+                name: "WeightHistory");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

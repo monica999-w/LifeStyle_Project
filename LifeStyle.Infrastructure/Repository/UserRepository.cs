@@ -91,6 +91,7 @@ namespace LifeStyle.Aplication.Logic
                 return 0;
             }
         }
+      
 
         public async Task<UserProfile> GetByName(string name)
         {

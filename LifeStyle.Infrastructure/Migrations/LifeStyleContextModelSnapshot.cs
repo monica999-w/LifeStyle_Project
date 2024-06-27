@@ -191,6 +191,30 @@ namespace LifeStyle.Infrastructure.Migrations
                     b.ToTable("UserProfiles");
                 });
 
+            modelBuilder.Entity("LifeStyle.Domain.Models.Users.WeightHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Date")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("UserProfileId")
+                        .HasColumnType("int");
+
+                    b.Property<double>("Weight")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserProfileId");
+
+                    b.ToTable("WeightHistory");
+                });
+
             modelBuilder.Entity("LifeStyle.Models.Planner.Planner", b =>
                 {
                     b.Property<int>("PlannerId")
@@ -460,6 +484,17 @@ namespace LifeStyle.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("LifeStyle.Domain.Models.Users.WeightHistory", b =>
+                {
+                    b.HasOne("LifeStyle.Domain.Models.Users.UserProfile", "UserProfile")
+                        .WithMany("WeightEntries")
+                        .HasForeignKey("UserProfileId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserProfile");
+                });
+
             modelBuilder.Entity("LifeStyle.Models.Planner.Planner", b =>
                 {
                     b.HasOne("LifeStyle.Domain.Models.Users.UserProfile", "Profile")
@@ -533,6 +568,11 @@ namespace LifeStyle.Infrastructure.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("LifeStyle.Domain.Models.Users.UserProfile", b =>
+                {
+                    b.Navigation("WeightEntries");
                 });
 #pragma warning restore 612, 618
         }

@@ -145,6 +145,7 @@ const ExerciseDetails: React.FC = () => {
                             }}
                         >
                             {isExerciseInPlanner(exercise.id) ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                            Add Your Planner
                         </IconButton>
                     </Box>
                     <Typography id="exercise-modal-title" variant="h4" component="h2" align="center" sx={{ backgroundColor: '#00695c', color: '#fff', padding: '8px 0', marginBottom: '20px' }}>
