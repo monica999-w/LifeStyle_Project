@@ -18,128 +18,127 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace LifeStyle.IntegrationTests
+namespace LifeStyle.IntegrationTests { }
+
+public class PlannerControllerIntegrationTests
 {
-    public class PlannerControllerIntegrationTests
+
+    [Fact]
+    public async Task PlannersController_CreatePlanner_WithValidData_ReturnsOk()
     {
+        // Arrange
+        using var contextBuilder = new DataContextBuilder();
+        var dbContext = contextBuilder.GetContext();
 
-        [Fact]
-        public async Task PlannersController_CreatePlanner_WithValidData_ReturnsOk()
+        var exerciseRepository = new ExerciseRepository(dbContext);
+        var mealRepository = new MealRepository(dbContext);
+        var userProfileRepository = new UserRepository(dbContext);
+        var plannerRepository = new PlannerRepository(dbContext);
+        var unitOfWork = new UnitOfWork(dbContext, exerciseRepository, null, mealRepository, userProfileRepository, plannerRepository);
+
+        var mapper = TestHelpers.CreateMapper();
+        var mediator = TestHelpers.CreateMediator(unitOfWork);
+
+        var controller = new PlannerController(mediator, mapper);
+
+        // Seed necessary data
+        var user = new UserProfile { Email = "user@example.com", PhoneNumber = "1234567890", Height = 180, Weight = 75, UserId = "useer", PhotoUrl = null, BirthDate = null };
+        await dbContext.UserProfiles.AddAsync(user);
+
+        var meal1 = new Meal { MealName = "Meal 1", MealType = MealType.Breakfast, Image = "img", PreparationInstructions = "prep" };
+        await dbContext.Meals.AddRangeAsync(meal1);
+
+        var exercise1 = new Exercise { Name = "Exercise 1", DurationInMinutes = 10, Type = ExerciseType.Pilates, Description = "descp", VideoLink = "video" };
+        var exercise2 = new Exercise { Name = "Exercise 2", DurationInMinutes = 10, Type = ExerciseType.Pilates, Description = "descp", VideoLink = "video" };
+        await dbContext.Exercises.AddRangeAsync(exercise1, exercise2);
+
+        await dbContext.SaveChangesAsync();
+
+        // Act
+        var plannerDto = new PlannerDto
         {
-            // Arrange
-            using var contextBuilder = new DataContextBuilder();
-            var dbContext = contextBuilder.GetContext();
+            Profile = "useer", // Assuming "useer" matches the UserId of the seeded user
+            MealIds = new List<int> { meal1.MealId },
+            ExerciseIds = new List<int> { exercise1.ExerciseId, exercise2.ExerciseId }
+        };
 
-            var exerciseRepository = new ExerciseRepository(dbContext);
-            var mealRepository = new MealRepository(dbContext);
-            var userProfileRepository = new UserRepository(dbContext);
-            var plannerRepository = new PlannerRepository(dbContext);
-            var unitOfWork = new UnitOfWork(dbContext, exerciseRepository, null, mealRepository, userProfileRepository, plannerRepository);
+        var requestResult = await controller.CreatePlanner(plannerDto);
 
-            var mapper = TestHelpers.CreateMapper();
-            var mediator = TestHelpers.CreateMediator(unitOfWork);
+        // Assert
+        var result = requestResult as OkObjectResult;
+        Assert.NotNull(result);
+        Assert.Equal(200, result.StatusCode);
 
-            var controller = new PlannerController(mediator, mapper);
+        var resultValue = result.Value as PlannerDto;
+        Assert.NotNull(resultValue);
+        Assert.Equal(plannerDto.MealIds.Count, resultValue.MealIds.Count);
+        Assert.Equal(plannerDto.ExerciseIds.Count, resultValue.ExerciseIds.Count);
+    }
 
-          
-            var user = new UserProfile { Email = "user@example.com", PhoneNumber = "1234567890", Height = 180, Weight = 75 };
-            var meal1 = new Meal { Name = "Meal 1", MealType = MealType.Breakfast };
-            var meal2 = new Meal { Name = "Meal 2", MealType = MealType.Lunch };
-            var exercise1 = new Exercise { Name = "Exercise 1", DurationInMinutes= 10,Type=ExerciseType.Swimming };
-            var exercise2 = new Exercise { Name = "Exercise 2", DurationInMinutes = 10, Type = ExerciseType.Swimming };
 
-            await dbContext.UserProfiles.AddAsync(user);
-            await dbContext.Meals.AddAsync(meal1);
-            await dbContext.Meals.AddAsync(meal2);
-            await dbContext.Exercises.AddAsync(exercise1);
-            await dbContext.Exercises.AddAsync(exercise2);
-            await dbContext.SaveChangesAsync();
+    [Fact]
+    public async Task PlannersController_DeletePlanner_WithValidPlannerId_ReturnsNoContent()
+    {
+        // Arrange
+        using var contextBuilder = new DataContextBuilder();
+        var dbContext = contextBuilder.GetContext();
 
-            // Act
-            var plannerDto = new PlannerDto
-            {
-                ProfileId = user.ProfileId,
-                MealIds = new List<int> { meal1.MealId, meal2.MealId },
-                ExerciseIds = new List<int> { exercise1.ExerciseId, exercise2.ExerciseId }
-            };
+        var exerciseRepository = new ExerciseRepository(dbContext);
+        var mealRepository = new MealRepository(dbContext);
+        var userProfileRepository = new UserRepository(dbContext);
+        var plannerRepository = new PlannerRepository(dbContext);
+        var unitOfWork = new UnitOfWork(dbContext, exerciseRepository, null, mealRepository, userProfileRepository, plannerRepository);
 
-            var requestResult = await controller.CreatePlanner(plannerDto);
+        var mapper = TestHelpers.CreateMapper();
+        var mediator = TestHelpers.CreateMediator(unitOfWork);
 
-            // Assert
-            var result = requestResult as OkObjectResult;
-            Assert.NotNull(result);
-            Assert.Equal(200, result.StatusCode);
+        var controller = new PlannerController(mediator, mapper);
 
-            var resultValue = result.Value as PlannerDto;
-            Assert.NotNull(resultValue);
-            Assert.Equal(plannerDto.ProfileId, resultValue.ProfileId);
-            Assert.Equal(plannerDto.MealIds.Count, resultValue.MealIds.Count);
-            Assert.Equal(plannerDto.ExerciseIds.Count, resultValue.ExerciseIds.Count);
-        }
+        // Seed the database with necessary data
+        var user = new UserProfile { Email = "user@example.com", PhoneNumber = "1234567890", Height = 180, Weight = 75 };
+        await dbContext.UserProfiles.AddAsync(user);
+        await dbContext.SaveChangesAsync();
 
-        [Fact]
-        public async Task PlannersController_DeletePlanner_WithValidPlannerId_ReturnsNoContent()
-        {
-            // Arrange
-            using var contextBuilder = new DataContextBuilder();
-            var dbContext = contextBuilder.GetContext();
+        var planner = new Planner(user);
+        await dbContext.Planners.AddAsync(planner);
+        await dbContext.SaveChangesAsync();
 
-            var exerciseRepository = new ExerciseRepository(dbContext);
-            var mealRepository = new MealRepository(dbContext);
-            var userProfileRepository = new UserRepository(dbContext);
-            var plannerRepository = new PlannerRepository(dbContext);
-            var unitOfWork = new UnitOfWork(dbContext, exerciseRepository, null, mealRepository, userProfileRepository, plannerRepository);
+        // Act
+        var requestResult = await controller.DeletePlanner(planner.PlannerId);
 
-            var mapper = TestHelpers.CreateMapper();
-            var mediator = TestHelpers.CreateMediator(unitOfWork);
+        // Assert
+        var result = requestResult as NoContentResult;
+        Assert.NotNull(result);
+        Assert.Equal(204, result.StatusCode);
+    }
 
-            var controller = new PlannerController(mediator, mapper);
+    [Fact]
+    public async Task PlannersController_DeletePlanner_WithInvalidPlannerId_ReturnsNotFound()
+    {
+        // Arrange
+        using var contextBuilder = new DataContextBuilder();
+        var dbContext = contextBuilder.GetContext();
 
-            // Seed the database with necessary data
-            var user = new UserProfile { Email = "user@example.com", PhoneNumber = "1234567890", Height = 180, Weight = 75 };
-            await dbContext.UserProfiles.AddAsync(user);
-            await dbContext.SaveChangesAsync();
+        var exerciseRepository = new ExerciseRepository(dbContext);
+        var mealRepository = new MealRepository(dbContext);
+        var userProfileRepository = new UserRepository(dbContext);
+        var plannerRepository = new PlannerRepository(dbContext);
+        var unitOfWork = new UnitOfWork(dbContext, exerciseRepository, null, mealRepository, userProfileRepository, plannerRepository);
 
-            var planner = new Planner(user);
-            await dbContext.Planners.AddAsync(planner);
-            await dbContext.SaveChangesAsync();
+        var mapper = TestHelpers.CreateMapper();
+        var mediator = TestHelpers.CreateMediator(unitOfWork);
 
-            // Act
-            var requestResult = await controller.DeletePlanner(planner.PlannerId);
+        var controller = new PlannerController(mediator, mapper);
 
-            // Assert
-            var result = requestResult as NoContentResult;
-            Assert.NotNull(result);
-            Assert.Equal(204, result.StatusCode);
-        }
+        // Act
+        var invalidPlannerId = 999; // Assuming this ID does not exist
+        var requestResult = await controller.DeletePlanner(invalidPlannerId);
 
-        [Fact]
-        public async Task PlannersController_DeletePlanner_WithInvalidPlannerId_ReturnsNotFound()
-        {
-            // Arrange
-            using var contextBuilder = new DataContextBuilder();
-            var dbContext = contextBuilder.GetContext();
-
-            var exerciseRepository = new ExerciseRepository(dbContext);
-            var mealRepository = new MealRepository(dbContext);
-            var userProfileRepository = new UserRepository(dbContext);
-            var plannerRepository = new PlannerRepository(dbContext);
-            var unitOfWork = new UnitOfWork(dbContext, exerciseRepository, null, mealRepository, userProfileRepository, plannerRepository);
-
-            var mapper = TestHelpers.CreateMapper();
-            var mediator = TestHelpers.CreateMediator(unitOfWork);
-
-            var controller = new PlannerController(mediator, mapper);
-
-            // Act
-            var invalidPlannerId = 999; // Assuming this ID does not exist
-            var requestResult = await controller.DeletePlanner(invalidPlannerId);
-
-            // Assert
-            var result = requestResult as NotFoundObjectResult;
-            Assert.NotNull(result);
-            Assert.Equal(404, result.StatusCode);
-            Assert.Equal($"Planner with ID {invalidPlannerId} not found", result.Value);
-        }
+        // Assert
+        var result = requestResult as NotFoundObjectResult;
+        Assert.NotNull(result);
+        Assert.Equal(404, result.StatusCode);
+        Assert.Equal($"Planner with ID {invalidPlannerId} not found", result.Value);
     }
 }
+

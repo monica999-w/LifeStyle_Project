@@ -30,7 +30,7 @@ namespace LifeStyle.UnitTests.CommandHandlers
 
             var handler = new CreateExerciseHandler(_unitOfWorkMock);
 
-            var request = new CreateExercise("Exercise 1", 30, ExerciseType.Yoga);
+            var request = new CreateExercise("Exercise 1", 30,"descript" ,"video",ExerciseType.Yoga,Equipment.Machine,MajorMuscle.Back);
 
             repository?.GetByName(Arg.Any<string>()).Returns((Exercise)null);
             _unitOfWorkMock.ExerciseRepository.Returns(repository);
@@ -60,7 +60,7 @@ namespace LifeStyle.UnitTests.CommandHandlers
         {
            // Arrange
            var handler = new CreateExerciseHandler(_unitOfWorkMock);
-            var request = new CreateExercise("ExistingExercise", 30, ExerciseType.Yoga);
+            var request = new CreateExercise("Exercise 1", 30, "descript", "video", ExerciseType.Yoga, Equipment.Machine, MajorMuscle.Back);
 
             var existingExercise = new Exercise();
             _unitOfWorkMock.ExerciseRepository.GetByName(request.Name).Returns(existingExercise);
@@ -76,7 +76,7 @@ namespace LifeStyle.UnitTests.CommandHandlers
         {
            // Arrange
            var handler = new CreateExerciseHandler(_unitOfWorkMock);
-            var request = new CreateExercise("ExerciseName", 30, ExerciseType.Yoga);
+            var request = new CreateExercise("Exercise 1", 30, "descript", "video", ExerciseType.Yoga, Equipment.Machine, MajorMuscle.Back);
 
             var exception = new Exception("Test exception");
             _unitOfWorkMock.ExerciseRepository.GetByName(request.Name).Throws(exception);

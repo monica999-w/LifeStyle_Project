@@ -38,7 +38,7 @@ namespace LifeStyle.UnitTests.CommandHandlers
             var meal = new Meal
             {
                 MealId = mealId,
-                Name = "Meal 1",
+                MealName = "Meal 1",
                 MealType = MealType.Breakfast,
                 Nutrients = new Nutrients(1, 200, 20, 30, 10)
             };

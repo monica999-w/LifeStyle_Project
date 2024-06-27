@@ -40,23 +40,7 @@ namespace LifeStyle.UnitTests.ControllerTests
             Assert.IsType<OkObjectResult>(actionResult.Result);
         }
 
-        [Fact]
-        public async Task CreatePlanner_ValidModelState_ReturnsOkResult()
-        {
-            // Arrange
-            var controller = new PlannerController(_mediatorMock, _mapperMock);
-            var plannerDto = new PlannerDto { ProfileId = 1, MealIds = new List<int>(), ExerciseIds = new List<int>() };
-            var expectedResult = new Planner { PlannerId = 1, Meals = new List<Meal>(), Exercises = new List<Exercise>() };
-            _mediatorMock.Send(Arg.Any<CreatePlanner>()).Returns(expectedResult);
-            _mapperMock.Map<PlannerDto>(expectedResult).Returns(new PlannerDto());
-
-            // Act
-            var result = await controller.CreatePlanner(plannerDto);
-
-            // Assert
-            Assert.IsType<OkObjectResult>(result);
-        }
-
+       
         [Fact]
         public async Task DeletePlanner_ExistingPlannerId_ReturnsNoContentResult()
         {

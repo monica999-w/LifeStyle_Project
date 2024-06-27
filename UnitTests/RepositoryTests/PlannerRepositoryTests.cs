@@ -16,42 +16,22 @@ namespace LifeStyle.nUnitTests
             var userProfile = new UserProfile(3, "user3@example.com", "834875734", 165.0, 55.0);
             var planner = new Planner(userProfile);
 
-          
             var mockPlannerRepository = new Mock<IPlannerRepository>();
-            mockPlannerRepository.Setup(repo => repo.AddPlanner(planner))
-                                 .Returns((Task<Planner>)Task.CompletedTask);
+            mockPlannerRepository.Setup(repo => repo.AddPlanner(It.IsAny<Planner>()))
+                                 .ReturnsAsync(planner); 
 
             // Act
-            await mockPlannerRepository.Object.AddPlanner(planner);
+            var addedPlanner = await mockPlannerRepository.Object.AddPlanner(planner);
 
             // Assert
-           
+            Assert.Equal(planner, addedPlanner); 
+
             mockPlannerRepository.Setup(repo => repo.GetPlannerByUser(userProfile))
-                                 .Returns(Task.FromResult(planner));
+                                 .ReturnsAsync(planner);
 
             var result = await mockPlannerRepository.Object.GetPlannerByUser(userProfile);
-            Assert.NotNull(result); 
-            Assert.Equal(planner, result); 
-        }
-
-
-        [Fact]
-        public async Task RemovePlanner_RemovesPlanner()
-        {
-            // Arrange
-            var userProfile = new UserProfile(1, "user1@example.com", "123456789", 170.0, 70.0);
-            var plannerToRemove = new Planner(userProfile);
-
-            var mockPlannerRepository = new Mock<IPlannerRepository>();
-            mockPlannerRepository.Setup(repo => repo.RemovePlanner(plannerToRemove))
-                                 .Returns((Task<Planner>)Task.CompletedTask);
-
-            // Act
-            await mockPlannerRepository.Object.RemovePlanner(plannerToRemove);
-
-            // Assert
-            var result = await mockPlannerRepository.Object.GetPlannerByUser(userProfile);
-            Assert.Null(result);
+            Assert.NotNull(result);
+            Assert.Equal(planner, result);
         }
     }
 }

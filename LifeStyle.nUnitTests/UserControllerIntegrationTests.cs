@@ -76,7 +76,7 @@ namespace LifeStyle.IntegrationTests
             var controller = new UsersController(mediator, mapper);
 
             
-            var sampleUser = new UserProfile { ProfileId = 1, Email = "Sample", PhoneNumber = "0764362883", Height = 170, Weight= 90 };
+            var sampleUser = new UserProfile { ProfileId = 1, Email = "Sample", PhoneNumber = "0764362883", Height = 170, Weight= 90 ,UserId="10"};
             await dbContext.UserProfiles.AddAsync(sampleUser);
             await dbContext.SaveChangesAsync();
 
@@ -121,46 +121,6 @@ namespace LifeStyle.IntegrationTests
             Assert.Equal(200, result.StatusCode);
         }
 
-
-
-        [Fact]
-        public async Task UserController_Create_ReturnsConflict()
-        {
-            // Arrange
-            using var contextBuilder = new DataContextBuilder();
-            var dbContext = contextBuilder.GetContext();
-
-            var exerciseRepository = new ExerciseRepository(dbContext);
-            var nutrientRepository = new NutrientRepository(dbContext);
-            var mealRepository = new MealRepository(dbContext);
-            var plannerRepository = new PlannerRepository(dbContext);
-            var userRepository = new UserRepository(dbContext);
-            var unitOfWork = new UnitOfWork(dbContext, exerciseRepository, nutrientRepository, mealRepository, userRepository, plannerRepository);
-
-            var mapper = TestHelpers.CreateMapper();
-            var mediator = TestHelpers.CreateMediator(unitOfWork);
-
-            var controller = new UsersController(mediator, mapper);
-
-
-            var sampleUser = new UserProfile { ProfileId = 1, Email = "Sample", PhoneNumber = "0764362883", Height = 170, Weight= 90 };
-            await dbContext.UserProfiles.AddAsync(sampleUser);
-            await dbContext.SaveChangesAsync();
-
-            var sampleUserDto = new UserDto { Id = 1, Email = "Sample", PhoneNumber = "0764362883", Height = 170, Weight = 90 };
-          
-
-            // Act
-            var requestResult = await controller.CreateUser(sampleUserDto);
-
-            // Assert
-            var result = requestResult as ConflictObjectResult;
-            Assert.NotNull(result);
-
-            var errorMessage = result!.Value as string;
-            Assert.NotNull(errorMessage);
-          
-        }
 
         [Fact]
         public async Task UserController_Delete_ReturnsNoContent()

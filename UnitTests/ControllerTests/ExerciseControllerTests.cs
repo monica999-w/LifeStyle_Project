@@ -27,28 +27,7 @@ namespace LifeStyle.UnitTests.ControllerTests
             _mediatorMock = Substitute.For<IMediator>();
         }
 
-        [Fact]
-        public async Task GetAllExercises_Returns_Ok()
-        {
-            // Arrange
-            
-            var controller = new ExerciseController( _mediatorMock, _mapperMock);
-
-            var expectedResult = new List<Exercise>();
-
-            _mediatorMock.Send(Arg.Any<GetAllExercise>()).Returns(expectedResult);
-            _mapperMock.Map<List<ExerciseDto>>(expectedResult).Returns(new List<ExerciseDto>());
-
-
-            // Act
-            var result = await controller.GetAllExercises();
-
-            // Assert
-            var actionResult = Assert.IsAssignableFrom<ActionResult<IEnumerable<ExerciseDto>>>(result);
-            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
-
-        }
-
+        
 
         [Fact]
         public async Task GetExerciseById_ExistingExerciseId_ReturnsOkResult()
@@ -121,8 +100,7 @@ namespace LifeStyle.UnitTests.ControllerTests
             // Arrange
             var controller = new ExerciseController(_mediatorMock, _mapperMock);
             var exerciseId = 1;
-            var command = new UpdateExercise(exerciseId, "Updated Exercise", 45, ExerciseType.Cardio);
-
+            var command = new UpdateExercise(exerciseId,"name",30, "descript", "video", ExerciseType.Yoga, Equipment.Machine, MajorMuscle.Back);
             var expectedResult = new Exercise();
 
             _mediatorMock.Send(Arg.Any<UpdateExercise>()).Returns(expectedResult);

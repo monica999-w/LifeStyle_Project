@@ -28,7 +28,7 @@ namespace LifeStyle.UnitTests.CommandHandlers
 
             var handler = new UpdateExerciseHandler(_unitOfWorkMock);
 
-            var request = new UpdateExercise(1, "Updated Exercise", 45, ExerciseType.Cardio);
+            var request = new UpdateExercise(1,"Exercise 1", 30, "descript", "video", ExerciseType.Yoga, Equipment.Machine, MajorMuscle.Back); ;
 
             var existingExercise = new Exercise
             {
@@ -61,7 +61,7 @@ namespace LifeStyle.UnitTests.CommandHandlers
 
             var handler = new UpdateExerciseHandler(_unitOfWorkMock);
 
-            var request = new UpdateExercise(1, "Updated Exercise", 45, ExerciseType.Yoga);
+            var request = new UpdateExercise(1,"Exercise 1", 30, "descript", "video", ExerciseType.Yoga, Equipment.Machine, MajorMuscle.Back);
 
             _unitOfWorkMock.ExerciseRepository.GetById(request.ExerciseId).Returns((Exercise)null);
 
@@ -76,7 +76,7 @@ namespace LifeStyle.UnitTests.CommandHandlers
 
             var handler = new UpdateExerciseHandler(_unitOfWorkMock);
 
-            var request = new UpdateExercise(1, "Updated Exercise", 45, ExerciseType.Yoga);
+            var request = new UpdateExercise(1,"Exercise 1", 30, "descript", "video", ExerciseType.Yoga, Equipment.Machine, MajorMuscle.Back);
 
             var exception = new Exception("Test exception");
             _unitOfWorkMock.ExerciseRepository.GetById(request.ExerciseId).Throws(exception);

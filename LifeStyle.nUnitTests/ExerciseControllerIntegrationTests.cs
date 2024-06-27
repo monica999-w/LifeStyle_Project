@@ -80,7 +80,7 @@ namespace LifeStyle.IntegrationTests
 
             var controller = new ExerciseController(mediator, mapper);
 
-            // Add a sample exercise to the database
+            // Add
             var sampleExercise = new Exercise { ExerciseId = 1, Name = "Sample Exercise", DurationInMinutes = 30, Type = ExerciseType.Cardio };
             await dbContext.Exercises.AddAsync(sampleExercise);
             await dbContext.SaveChangesAsync();
@@ -124,7 +124,7 @@ namespace LifeStyle.IntegrationTests
             {
                 Name = "New Exercise",
                 DurationInMinutes = 45,
-                Type = ExerciseType.Running
+                Type = ExerciseType.Aerobics
             };
             var requestResult = await controller.Create(newExerciseDto);
 
